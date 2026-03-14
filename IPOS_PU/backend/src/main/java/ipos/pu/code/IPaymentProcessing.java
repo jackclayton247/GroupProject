@@ -1,3 +1,5 @@
+package ipos.pu.code;
+
 public interface IPaymentProcessing {
 
 	/**
@@ -9,6 +11,6 @@ public interface IPaymentProcessing {
 	 * @param cardDetails
 	 * @param amount
 	 */
-	string requestPayment(string merchantID, string orderID, string fullName, string address, string[] cardDetails, double amount);
+	String requestPayment(String merchantID, String orderID, String fullName, String address, String[] cardDetails, double amount);
 
 }

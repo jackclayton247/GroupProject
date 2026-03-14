@@ -1,3 +1,5 @@
+package ipos.pu.code;
+
 public interface ICommercialMembershipService {
 
 	/**
@@ -12,6 +14,6 @@ public interface ICommercialMembershipService {
 	 * @param fax
 	 * @param preferPhysicalMail True if commercial customer prefers to receive the confirmation by regular mail
 	 */
-	boolean requestMembership(string companyName, string resgistrationNumber, string directors, string businessType, string address, string email, string fax, boolean preferPhysicalMail);
+	boolean requestMembership(String companyName, String registrationNumber, String directors, String businessType, String address, String email, String fax, boolean preferPhysicalMail);
 
 }

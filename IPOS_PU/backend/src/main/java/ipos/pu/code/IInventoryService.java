@@ -1,3 +1,7 @@
+package ipos.pu.code;
+
+import java.util.List;
+
 public interface IInventoryService {
 
 	List<CatalogueItem> getCatalogue();
@@ -7,18 +11,18 @@ public interface IInventoryService {
 	 * @param itemID
 	 * @param quantity
 	 */
-	string reserveItemsForPurchase(string[] itemID, int[] quantity);
+	String reserveItemsForPurchase(String[] itemID, int[] quantity);
 
 	/**
 	 * 
 	 * @param reservationID
 	 */
-	boolean cancelReservedItems(string[] reservationID);
+	boolean cancelReservedItems(String[] reservationID);
 
 	/**
 	 * 
 	 * @param reservationID
 	 */
-	string deductStock(string reservationID);
+	String deductStock(String reservationID);
 
 }

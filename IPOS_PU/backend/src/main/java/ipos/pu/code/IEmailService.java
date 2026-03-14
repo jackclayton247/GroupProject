@@ -1,3 +1,5 @@
+package ipos.pu.code;
+
 public interface IEmailService {
 
 	/**
@@ -8,6 +10,6 @@ public interface IEmailService {
 	 * @param sender
 	 * @param sybsystem
 	 */
-	boolean produceEmail(string email, string content, string reference, string sender, string sybsystem);
+	boolean produceEmail(String email, String content, String reference, String sender, String sybsystem);
 
 }

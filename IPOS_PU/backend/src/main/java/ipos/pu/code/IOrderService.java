@@ -1,3 +1,5 @@
+package ipos.pu.code;
+
 public interface IOrderService {
 
 	/**
@@ -5,43 +7,43 @@ public interface IOrderService {
 	 * @param merchantID
 	 * @param orderDetails
 	 */
-	string placeRestockOrder(string merchantID, string orderDetails);
+	String placeRestockOrder(String merchantID, String orderDetails);
 
 	/**
 	 * 
 	 * @param orderID
 	 */
-	string trackDelivery(string orderID);
+	String trackDelivery(String orderID);
 
 	/**
 	 * 
 	 * @param merchantID
 	 */
-	double queryOutstandingBalance(string merchantID);
+	double queryOutstandingBalance(String merchantID);
 
 	/**
 	 * 
 	 * @param orderID
 	 */
-	string getInvoice(string orderID);
+	String getInvoice(String orderID);
 
 	/**
 	 * 
 	 * @param merchantID
 	 * @param status
 	 */
-	boolean getAccStatus(string merchantID, string status);
+	boolean getAccStatus(String merchantID, String status);
 
 	/**
 	 * 
 	 * @param merchantID
 	 */
-	boolean viewDiscountPlan(string merchantID);
+	boolean viewDiscountPlan(String merchantID);
 
 	/**
 	 * 
 	 * @param merchantID
 	 */
-	boolean viewCreditLimit(string merchantID);
+	boolean viewCreditLimit(String merchantID);
 
 }

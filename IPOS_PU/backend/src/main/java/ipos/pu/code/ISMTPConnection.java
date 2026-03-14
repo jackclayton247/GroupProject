@@ -1,3 +1,5 @@
+package ipos.pu.code;
+
 public interface ISMTPConnection {
 
 	/**
@@ -7,6 +9,6 @@ public interface ISMTPConnection {
 	 * @param reference
 	 * @param sender
 	 */
-	boolean sendEmail(string email, string content, string reference, string sender);
+	boolean sendEmail(String email, String content, String reference, String sender);
 
 }
