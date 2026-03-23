@@ -30,7 +30,11 @@ const products = [
 
 function ProductsPage() {
     const [selectedCategory, setSelectedCategory] = useState('100');
-    const filtered = products.filter(p => p.itemId.startsWith(selectedCategory))
+    const [search, setSearch] = useState("");
+    const filtered = products.filter(p => 
+        p.itemId.startsWith(selectedCategory) &&
+        p.description.toLowerCase().includes(search.toLowerCase())
+    );
   return (
     <div className="products-page">
         <div className="products-sidebar">
@@ -48,6 +52,13 @@ function ProductsPage() {
         </div>
         <div className="products-main">
             <h2 className="products-main-title">{categories.find(c => c.id === selectedCategory)?.name}</h2>
+            <input
+            type="text"
+            className="products-search"
+            placeholder="Search products"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            />
             <div className="products-grid">
                 {filtered.map(p => (
                     <div key={p.itemId} className="product-card">
