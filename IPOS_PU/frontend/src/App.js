@@ -4,12 +4,7 @@ import LoginPage from './pages/LoginPage';
 import './App.css';
 
 function Home() {
-  return (
-    <div className="home-placeholder">
-      <h1>Welcome to IPOS-PU</h1>
-      <p>Your trusted online pharmacy</p>
-    </div>
-  );
+  return <div className="home-placeholder" />;
 }
 
 function App() {
