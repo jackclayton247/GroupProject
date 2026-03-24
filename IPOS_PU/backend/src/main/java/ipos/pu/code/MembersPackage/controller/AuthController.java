@@ -19,11 +19,13 @@ public class AuthController {
 
         System.out.println("Login endpoint hit");
 
-        String username = request.get("username");
+        String email = request.get("email");
         String password = request.get("password");
 
-        System.out.println(username);
+        System.out.println(email);
         System.out.println(password);
+
+        authService.login(email, password);
 
         return "OK";
     }
@@ -31,13 +33,13 @@ public class AuthController {
     public String signup(@RequestBody Map<String, String> request) {
         System.out.println("Signup endpoint hit");
 
-        String username = request.get("username");
+        String email = request.get("email");
         String password = request.get("password");
 
-        System.out.println(username);
+        System.out.println(email);
         System.out.println(password);
 
-        authService.signup(username, password);
+        authService.signup(email, password);
 
         return "OK";
     }

@@ -10,7 +10,7 @@ public class DatabaseConfig {
     private static final String PASSWORD = "rootpassword";
 
     public static Connection getConnection() throws Exception {
-        System.out.println("getting connection");
+        System.out.println("connecting to db");
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 }
