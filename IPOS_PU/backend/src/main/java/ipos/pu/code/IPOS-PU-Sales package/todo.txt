@@ -1,0 +1,13 @@
+◼ show IPOS - CA catalogue.
+◼ show a list of links to active promotion campaigns (provided there is at least one active campaign at the time a
+customer is scanning the on-line catalogue)
+◼ clicking the link of an active promotion campaign will show details on promotion campaign.
+◼ maintain a shopping cart for customers (and non-commercial members)
+◼ apply discounts to products included in active promotion campaigns.
+◼ maintain all counters envisaged in the initial statement of requirements (when links/product items are
+selected/added to cart/paid for).
+◼ checkout
+◼ accounting for non-commercial customer getting a 10% discount from every tenth order.
+◼ Collect delivery address.
+◼ Collect online payment.
+◼ Send the customer a sale confirmation with an order tracking link.

@@ -1,0 +1,5 @@
+◼ application for non-commercial account (membership)
+◼ application for commercial account (membership)
+◼ login/ by non-commercial members
+◼ non-commercial customer can view their purchase history.
+◼ ability by non-commercial members to track their orders (see the state of orders).

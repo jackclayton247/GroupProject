@@ -1,0 +1,2 @@
+◼ Create all reports envisaged in the initial requirements documents with option to print them.
+◼ generating a file (e.g. a pdf file) will be considered equivalent to printing.

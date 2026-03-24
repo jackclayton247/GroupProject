@@ -14,3 +14,6 @@ Thumbs.db
 /.idea/
 *.iml
 *.vscode/
+
+#frontend temp
+/frontend

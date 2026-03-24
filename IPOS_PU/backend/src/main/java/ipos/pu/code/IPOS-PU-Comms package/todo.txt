@@ -1,0 +1,5 @@
+◼ (optional) Configure access to SMTP server.
+◼ (optional) Configure access to an online payment processor.
+◼ Sending mails on behalf of IPOS-SA
+◼ Processing credit card payment requests on behalf of IPOS-CA (card payments are processed via the online
+payment processor)

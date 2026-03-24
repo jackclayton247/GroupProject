@@ -1,0 +1,4 @@
+◼ Create/modify/delete/terminate early promotion campaigns.
+◼ Setting period of campaign
+◼ Including items from IPOS-CA catalogue
+◼ Setting discount rates
