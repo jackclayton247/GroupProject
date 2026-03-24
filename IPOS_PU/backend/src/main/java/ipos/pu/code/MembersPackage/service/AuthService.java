@@ -1,6 +1,6 @@
-package ipos.pu.code.services;
+package ipos.pu.code.MembersPackage.service;
 
-import ipos.pu.code.model.User;
+import ipos.pu.code.MembersPackage.model.User;
 import ipos.pu.code.config.DatabaseConfig;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

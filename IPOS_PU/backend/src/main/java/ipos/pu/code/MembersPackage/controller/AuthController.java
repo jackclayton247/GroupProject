@@ -1,4 +1,4 @@
-package ipos.pu.code.controller;
+package ipos.pu.code.MembersPackage.controller;
 
 import java.util.Map;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import ipos.pu.code.services.AuthService;
+import ipos.pu.code.MembersPackage.service.AuthService;
 
 @RestController
 @RequestMapping("/auth")
