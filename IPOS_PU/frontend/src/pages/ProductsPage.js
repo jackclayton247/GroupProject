@@ -35,6 +35,7 @@ function ProductsPage() {
         p.itemId.startsWith(selectedCategory) &&
         p.description.toLowerCase().includes(search.toLowerCase())
     );
+
   return (
     <div className="products-page">
         <div className="products-sidebar">
@@ -50,8 +51,11 @@ function ProductsPage() {
                 ))}
             </ul>
         </div>
+        
         <div className="products-main">
+            <div className="products-main-header">
             <h2 className="products-main-title">{categories.find(c => c.id === selectedCategory)?.name}</h2>
+            <div className="products-search-wrapper">
             <input
             type="text"
             className="products-search"
@@ -59,15 +63,24 @@ function ProductsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             />
+           <button className="products-search-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+            </button>
+            </div>
+            </div>
+
             <div className="products-grid">
                 {filtered.map(p => (
                     <div key={p.itemId} className="product-card">
                         <h3>{p.description}</h3>
-                        <p>{p.itemId}</p>
-                        <p>{p.packageType}, {p.unitsInPack} {p.units}</p>
-                        <p>£{p.price.toFixed(2)}</p>
-                        <p>{p.availability} packs in stock</p>
-                        <button> Add to Cart</button>
+                        <p className="product-id">ID: {p.itemId}</p>
+                        <p className="product-detail">Package: {p.packageType} ({p.unitsInPack} units/pack)</p>
+                        <p className="product-price">£{p.price.toFixed(2)} per pack</p>
+                        <p className="product-stock">✓ {p.availability} packs in stock</p>
+                        <button>Add to Cart</button>
                         </div>
                 ))}
             </div>
