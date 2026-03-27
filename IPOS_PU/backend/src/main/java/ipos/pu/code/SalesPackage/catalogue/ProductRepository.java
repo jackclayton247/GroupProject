@@ -1,6 +1,6 @@
 package ipos.pu.code.SalesPackage.catalogue;
 
-import ipos.pu.code.SalesPackage.model.Product;
+import ipos.pu.code.SalesPackage.catalogue.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
