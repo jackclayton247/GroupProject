@@ -1,4 +1,4 @@
-package ipos.pu.code.SalesPackage.catalogue;
+package ipos.pu.code.SalesPackage.model;
 
 import jakarta.persistence.*;
 
