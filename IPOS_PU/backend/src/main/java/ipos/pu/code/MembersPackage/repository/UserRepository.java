@@ -18,15 +18,13 @@ public class UserRepository {
             stmt.setString(2, password);
 
             stmt.executeUpdate();
-            return 0;
+            return 0; //user added
         }
         catch (java.sql.SQLIntegrityConstraintViolationException e) {
-            System.out.println("User already exists with this email.");
-            return 1;
+            return 1; //User already exists with this email.
         }
         catch (Exception e) {
-            System.out.println("an error occured trying to add this user to the database");
-            return 2;
+            return 2; //an error occured trying to add this user to the database
         }
     }
 
@@ -50,16 +48,13 @@ public class UserRepository {
                 System.out.println(userPassword);
 
                 if (userPassword.equals(password)) {
-                    System.out.println("success");
-                    return 0; 
+                    return 0; //success
                 } else {
-                    System.out.println("password is incorrect");
-                    return 1; 
+                    return 1; //password is incorrect
                 }
 
             } else {
-                System.out.println("user not found");
-                return 2; 
+                return 2; //user not found
             }
         }
         catch (Exception e) {
