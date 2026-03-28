@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `user` (
     orderNumber INT NOT NULL DEFAULT 0,
 );
 
-CREATE TABLE promotions (
+CREATE TABLE promotion (
     name VARCHAR(255) PRIMARY KEY,
     start_date DATETIME,
     end_date DATETIME
@@ -28,5 +28,5 @@ CREATE TABLE promotion_product (
     promotion_name VARCHAR(255),
     discount FLOAT,
 
-    FOREIGN KEY (promotion_name) REFERENCES promotions(name)
+    FOREIGN KEY (name) REFERENCES promotions(name)
 );

@@ -9,8 +9,8 @@ public class PromotionProduct {
     private int productId;
 
     @ManyToOne
-    @JoinColumn(name = "promotion_name")
-    private Promotions promotion;
+    @JoinColumn(name = "name")
+    private Promotion promotion;
 
     private float discount;
 }

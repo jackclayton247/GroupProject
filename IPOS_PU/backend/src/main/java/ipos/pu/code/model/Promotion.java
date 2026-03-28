@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 import jakarta.persistence.Id;
 
-public class Promotions {
+public class Promotion {
     @Id
     String name;
 
