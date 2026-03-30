@@ -1,4 +1,4 @@
-package ipos.pu.code.MembersPackage.model;
+package ipos.pu.code.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -8,5 +8,6 @@ public class User {
     @Id
     private String email;
     private String password;
+    private int orderNumber;
 
 }

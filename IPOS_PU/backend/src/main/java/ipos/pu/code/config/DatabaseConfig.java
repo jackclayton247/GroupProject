@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 
 public class DatabaseConfig {
 
-    private static final String URL = "jdbc:mysql://mysql:3306/ipos_db";
+    private static final String URL = "jdbc:mysql://mysql:3306/ipos_db?useSSL=false&serverTimezone=UTC";
     private static final String USER = "root";
     private static final String PASSWORD = "rootpassword";
 

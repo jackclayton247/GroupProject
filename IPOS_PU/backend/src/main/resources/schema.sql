@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE IF NOT EXISTS product_cache (
     product_id INT AUTO_INCREMENT PRIMARY KEY,
     item_id VARCHAR(255) NOT NULL UNIQUE,
     description VARCHAR(255) NOT NULL,
@@ -13,5 +13,21 @@ CREATE TABLE IF NOT EXISTS products (
 
 CREATE TABLE IF NOT EXISTS `user` (
     email VARCHAR(255) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL
+    password VARCHAR(255) NOT NULL,
+    orderNumber INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS promotion (
+    name VARCHAR(255) PRIMARY KEY,
+    start DATETIME,
+    end DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS promotion_product (
+    product_id INT PRIMARY KEY,
+    promotion_name VARCHAR(255),
+    discount FLOAT,
+
+    FOREIGN KEY (promotion_name) REFERENCES promotion(name)
+    FOREIGN KEY (product_id) REFERENCES product_cache(product_id)
 );
