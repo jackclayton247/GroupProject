@@ -28,6 +28,22 @@ CREATE TABLE IF NOT EXISTS promotion_product (
     promotion_name VARCHAR(255),
     discount FLOAT,
 
-    FOREIGN KEY (promotion_name) REFERENCES promotion(name)
+    FOREIGN KEY (promotion_name) REFERENCES promotion(name),
     FOREIGN KEY (product_id) REFERENCES product_cache(product_id)
 );
+
+INSERT IGNORE INTO product_cache (item_id, description, package_type, units_in_pack, price, stock_quantity, is_active) VALUES
+('100 00001', 'Paracetamol', 'box', 20, 0.10, 10345, 1),
+('100 00002', 'Aspirin', 'box', 20, 0.50, 12453, 1),
+('100 00003', 'Analgin', 'box', 10, 1.20, 4235, 1),
+('100 00004', 'Celebrex, caps 100 mg', 'box', 10, 10.00, 3420, 1),
+('100 00005', 'Celebrex, caps 200 mg', 'box', 10, 18.50, 1450, 1),
+('100 00006', 'Retin-A Tretin, 30 g', 'box', 20, 25.00, 2013, 1),
+('100 00007', 'Lipitor TB, 20 mg', 'box', 30, 15.50, 1562, 1),
+('100 00008', 'Claritin CR, 60g', 'box', 20, 19.50, 2540, 1),
+('200 00004', 'Iodine tincture', 'bottle', 100, 0.30, 2213, 1),
+('200 00005', 'Rhynol', 'bottle', 200, 2.50, 1908, 1),
+('300 00001', 'Ospen', 'box', 20, 10.50, 809, 1),
+('300 00002', 'Amopen', 'box', 30, 15.00, 1340, 1),
+('400 00001', 'Vitamin C', 'box', 30, 1.20, 3258, 1),
+('400 00002', 'Vitamin B12', 'box', 30, 1.30, 2673, 1);

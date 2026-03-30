@@ -10,13 +10,16 @@ spring:
     username: root
     password: rootpassword
     driver-class-name: com.mysql.cj.jdbc.Driver
-    spring.datasource.initialization-mode: always
-    spring.jpa.hibernate.ddl-auto: create-drop
+
+  sql:
+    init:
+      mode: always
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: true
+    defer-datasource-initialization: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
