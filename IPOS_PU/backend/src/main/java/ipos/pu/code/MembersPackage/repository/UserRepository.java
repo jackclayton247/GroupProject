@@ -11,8 +11,7 @@ public class UserRepository {
     public int addUser(String email, String password) {
         String sql = "INSERT INTO user (email, password) VALUES (?, ?)";
 
-        try (Connection conn = DatabaseConfig.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, email);
             stmt.setString(2, password);

@@ -1,13 +1,15 @@
 package ipos.pu.code.model;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
+import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
+@Entity
 public class Promotion {
     @Id
     String name;
 
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private LocalDate start;
+    private LocalDate end;
 }
