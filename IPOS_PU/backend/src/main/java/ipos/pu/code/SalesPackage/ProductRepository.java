@@ -1,4 +1,4 @@
-package ipos.pu.code.SalesPackage.catalogue;
+package ipos.pu.code.SalesPackage;
 
 import ipos.pu.code.model.ProductCache;
 import org.springframework.data.jpa.repository.JpaRepository;

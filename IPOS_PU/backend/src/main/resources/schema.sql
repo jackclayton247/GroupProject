@@ -27,9 +27,41 @@ CREATE TABLE IF NOT EXISTS promotion_product (
     product_id INT PRIMARY KEY,
     promotion_name VARCHAR(255),
     discount FLOAT,
-
     FOREIGN KEY (promotion_name) REFERENCES promotion(name),
     FOREIGN KEY (product_id) REFERENCES product_cache(product_id)
+);
+
+CREATE TABLE IF NOT EXISTS orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_email VARCHAR(255),
+    order_date DATETIME DEFAULT NOW(),
+    status VARCHAR(50) DEFAULT 'received',
+    total_price DECIMAL(10,2),
+    delivery_address TEXT,
+    discount_applied DECIMAL(10,2) DEFAULT 0.00
+);
+
+CREATE TABLE IF NOT EXISTS order_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    unit_price DECIMAL(10,2),
+    FOREIGN KEY (order_id) REFERENCES orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES product_cache(product_id)
+);
+
+CREATE TABLE IF NOT EXISTS payments (
+    payment_id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    card_type VARCHAR(50),
+    card_first_four CHAR(4),
+    card_last_four CHAR(4),
+    card_expiry VARCHAR(7),
+    amount DECIMAL(10,2),
+    payment_time DATETIME DEFAULT NOW(),
+    status VARCHAR(50) DEFAULT 'completed',
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
 INSERT IGNORE INTO product_cache (item_id, description, package_type, units_in_pack, price, stock_quantity, is_active) VALUES

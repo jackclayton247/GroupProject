@@ -6,10 +6,12 @@ spring:
     name: ipos-backend
 
   datasource:
-    url: jdbc:mysql://mysql:3306/ipos_db
+    url: jdbc:mysql://mysql:3306/ipos_db?useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: rootpassword
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      initialization-fail-timeout: 60000
 
   sql:
     init:
