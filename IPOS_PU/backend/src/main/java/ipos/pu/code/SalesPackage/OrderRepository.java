@@ -107,4 +107,48 @@ public class OrderRepository {
             return -1;
         }
     }
+
+    public String getOrderStatus(int orderId) {
+        String sql = "SELECT status FROM orders WHERE order_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setInt(1, orderId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) return rs.getString("status");
+            return "order not found";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
+
+    public String getUndeliveredOrders() {
+    String sql = "SELECT o.order_id, o.user_email, o.delivery_address, o.order_date, o.total_price, o.status, oi.product_id, oi.quantity, oi.unit_price FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.status = 'received'";
+    StringBuilder result = new StringBuilder("[");
+    try (Connection conn = DatabaseConfig.getConnection();
+         PreparedStatement pst = conn.prepareStatement(sql)) {
+        ResultSet rs = pst.executeQuery();
+        boolean first = true;
+        while (rs.next()) {
+            if (!first) result.append(",");
+            result.append("{")
+                .append("\"orderId\":").append(rs.getInt("order_id")).append(",")
+                .append("\"userEmail\":\"").append(rs.getString("user_email")).append("\",")
+                .append("\"deliveryAddress\":\"").append(rs.getString("delivery_address")).append("\",")
+                .append("\"orderDate\":\"").append(rs.getString("order_date")).append("\",")
+                .append("\"totalPrice\":").append(rs.getDouble("total_price")).append(",")
+                .append("\"status\":\"").append(rs.getString("status")).append("\",")
+                .append("\"productId\":").append(rs.getInt("product_id")).append(",")
+                .append("\"quantity\":").append(rs.getInt("quantity")).append(",")
+                .append("\"unitPrice\":").append(rs.getDouble("unit_price"))
+                .append("}");
+            first = false;
+        }
+        result.append("]");
+        return result.toString();
+    } catch (Exception e) {
+        e.printStackTrace();
+        return "[]";
+    }
+}
 }
