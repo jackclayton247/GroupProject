@@ -15,4 +15,32 @@ public class PromotionProduct {
     private Promotion promotion;
 
     private float discount;
+
+
+    //getters
+        public int getProductId() {
+        return productId;
+    }
+
+    public Promotion getPromotion() {
+        return promotion;
+    }
+
+    public float getDiscount() {
+        return discount;
+    }
+
+    //setters
+    public void setProductId(int productId) {
+        this.productId = productId;
+    }
+
+    public void setPromotion(Promotion promotion) {
+        this.promotion = promotion;
+    }
+
+    public void setDiscount(float discount) {
+        this.discount = discount;
+    }
 }
+
