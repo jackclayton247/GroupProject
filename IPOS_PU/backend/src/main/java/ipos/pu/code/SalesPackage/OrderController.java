@@ -1,5 +1,6 @@
 package ipos.pu.code.SalesPackage;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -7,7 +8,14 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*")
 public class OrderController {
 
-    private final OrderService orderService = new OrderService();
+    private final OrderService orderService;
+    private final OrderRepository orderRepository;
+
+    @Autowired
+    public OrderController(OrderService orderService, OrderRepository orderRepository) {
+        this.orderService = orderService;
+        this.orderRepository = orderRepository;
+    }
 
     @PostMapping
     public String placeOrder(@RequestBody OrderRequest request) {
@@ -15,8 +23,6 @@ public class OrderController {
         if (orderId == -1) return "error placing order";
         return "order placed, id: " + orderId;
     }
-
-    private final OrderRepository orderRepository = new OrderRepository();
 
     @GetMapping("/undelivered")
     public String getUndeliveredOrders() {

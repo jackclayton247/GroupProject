@@ -3,7 +3,9 @@ package ipos.pu.code.SalesPackage;
 import ipos.pu.code.config.DatabaseConfig;
 import java.sql.*;
 import java.util.List;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class OrderRepository {
 
     public int createOrder(String userEmail, String deliveryAddress, double totalPrice, double discountApplied) {

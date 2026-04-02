@@ -2,10 +2,21 @@ package ipos.pu.code.SalesPackage;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import ipos.pu.code.CommsPackage.EmailService;
 
+@Service
 public class OrderService {
 
-    private final OrderRepository orderRepository = new OrderRepository();
+    private final OrderRepository orderRepository;
+    private final EmailService emailService;
+
+    @Autowired
+    public OrderService(OrderRepository orderRepository, EmailService emailService) {
+        this.orderRepository = orderRepository;
+        this.emailService = emailService;
+    }
 
     public int placeOrder(OrderRequest request) {
 
@@ -51,9 +62,14 @@ public class OrderService {
             orderRepository.deductStock(item.getProductId(), item.getQuantity());
         }
 
-        // increment order number if logged in
+        // increment order number and send email to user if logged in
         if (isLoggedIn) {
             orderRepository.incrementOrderNumber(email);
+            emailService.sendEmail(
+                email,
+                "Order Confirmation: Order #" + orderRepository.getOrderNumber(email),
+                "Thank you for your order!\n\nTrack your order at: http://localhost:8080/api/orders/track/" + orderId
+            );
         }
 
         return orderId;

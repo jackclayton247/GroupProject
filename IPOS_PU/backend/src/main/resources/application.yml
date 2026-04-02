@@ -25,3 +25,15 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: your_email@gmail.com
+    password: app password from gmail (2fa needs to be on)
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
