@@ -1,4 +1,5 @@
 package ipos.pu.code.SalesPackage;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -33,4 +34,11 @@ public class OrderController {
     public String trackOrder(@PathVariable int orderId) {
         return orderRepository.getOrderStatus(orderId);
     }
+
+    @PutMapping("/{orderId}/status")
+    public String updateOrderStatus(@PathVariable int orderId, @RequestBody Map<String, String> request) {
+    String status = request.get("status");
+    if (status == null || status.isEmpty()) return "error: missing status";
+    return orderRepository.updateOrderStatus(orderId, status);
+}
 }

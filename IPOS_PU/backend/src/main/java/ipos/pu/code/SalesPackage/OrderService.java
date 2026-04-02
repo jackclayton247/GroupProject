@@ -62,16 +62,17 @@ public class OrderService {
             orderRepository.deductStock(item.getProductId(), item.getQuantity());
         }
 
-        // increment order number and send email to user if logged in
-        if (isLoggedIn) {
-            orderRepository.incrementOrderNumber(email);
+        // increment order number if logged in, and send email to users
+        if (email != null && !email.isEmpty()) {
+            if (isLoggedIn) {
+                orderRepository.incrementOrderNumber(email);
+            }
             emailService.sendEmail(
                 email,
-                "Order Confirmation: Order #" + orderRepository.getOrderNumber(email),
+                "Order Confirmation: Order #" + orderRepository.getOrderCountByEmail(email),
                 "Thank you for your order!\n\nTrack your order at: http://localhost:8080/api/orders/track/" + orderId
             );
         }
-
         return orderId;
     }
 }

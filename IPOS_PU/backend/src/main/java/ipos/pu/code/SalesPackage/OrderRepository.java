@@ -145,12 +145,40 @@ public class OrderRepository {
                 .append("\"unitPrice\":").append(rs.getDouble("unit_price"))
                 .append("}");
             first = false;
+            }
+            result.append("]");
+            return result.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "[]";
         }
-        result.append("]");
-        return result.toString();
-    } catch (Exception e) {
-        e.printStackTrace();
-        return "[]";
     }
-}
+
+    public String updateOrderStatus(int orderId, String status) {
+        String sql = "UPDATE orders SET status = ? WHERE order_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+            PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setString(1, status);
+            pst.setInt(2, orderId);
+            pst.executeUpdate();
+            return "status updated to: " + status;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "error updating status";
+        }
+    }
+
+    public int getOrderCountByEmail(String email) {
+        String sql = "SELECT COUNT(*) FROM orders WHERE user_email = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+            PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setString(1, email);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) return rs.getInt(1);
+            return 1;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 1;
+        }
+    }
 }
