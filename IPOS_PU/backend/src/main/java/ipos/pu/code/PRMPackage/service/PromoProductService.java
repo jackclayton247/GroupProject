@@ -1,6 +1,9 @@
 package ipos.pu.code.PRMPackage.service;
 
+import java.util.List;
+
 import ipos.pu.code.PRMPackage.repository.PromoProductRepository;
+import ipos.pu.code.model.PromotionProduct;
 
 public class PromoProductService {
     private final PromoProductRepository promoProductRepository = new PromoProductRepository();
@@ -25,5 +28,8 @@ public class PromoProductService {
         else {
             return "unknown error";
         }
+    }
+    public List<PromotionProduct> getAll(String name) {
+        return promoProductRepository.getAll(name);
     }
 }
