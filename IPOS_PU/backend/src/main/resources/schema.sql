@@ -64,6 +64,19 @@ CREATE TABLE IF NOT EXISTS payments (
     FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );
 
+CREATE TABLE IF NOT EXISTS ca_payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    merchant_id VARCHAR(255),
+    order_id VARCHAR(255),
+    payee VARCHAR(255),
+    address TEXT,
+    card_first_four CHAR(4),
+    card_last_four CHAR(4),
+    amount DECIMAL(9,2),
+    status VARCHAR(50),
+    payment_time DATETIME DEFAULT NOW()
+);
+
 INSERT IGNORE INTO product_cache (item_id, description, package_type, units_in_pack, price, stock_quantity, is_active) VALUES
 ('100 00001', 'Paracetamol', 'box', 20, 0.10, 10345, 1),
 ('100 00002', 'Aspirin', 'box', 20, 0.50, 12453, 1),
