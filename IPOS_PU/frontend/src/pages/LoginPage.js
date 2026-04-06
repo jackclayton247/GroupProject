@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 
 function LoginPage() {
+  const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -10,15 +12,55 @@ function LoginPage() {
     firstName: '',
     lastName: '',
   });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Backend integration will go here
-    console.log(isRegister ? 'Register:' : 'Login:', formData);
+    setError('');
+    setSuccess('');
+
+    if (isRegister && formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    const endpoint = isRegister ? '/auth/signup' : '/auth/login';
+
+    try {
+      const response = await fetch(`http://localhost:8080${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const text = await response.text();
+
+      if (isRegister) {
+        if (text === 'account created') {
+          setSuccess('Account created! You can now sign in.');
+          setIsRegister(false);
+          setFormData({ email: formData.email, password: '', confirmPassword: '', firstName: '', lastName: '' });
+        } else {
+          setError(text);
+        }
+      } else {
+        if (text === 'session created') {
+          navigate('/');
+        } else {
+          setError(text);
+        }
+      }
+    } catch (err) {
+      setError('Could not connect to the server. Make sure the backend is running.');
+    }
   };
 
   return (
@@ -27,6 +69,9 @@ function LoginPage() {
         <div className="login-header">
           <h2>{isRegister ? 'Create Account' : 'Sign In'}</h2>
         </div>
+
+        {error && <p className="login-error">{error}</p>}
+        {success && <p className="login-success">{success}</p>}
 
         <form onSubmit={handleSubmit} className="login-form">
           {isRegister && (

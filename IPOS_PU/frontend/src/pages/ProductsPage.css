@@ -108,7 +108,7 @@
 }
 
 .product-card button {
-    background-color: var(--yellow);
+    background-color: var(--green);
     color: var(--blue-dark);
     border: none;
     padding: 10px;

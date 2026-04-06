@@ -1,6 +1,9 @@
 package ipos.pu.code.PRMPackage.controller;
 
 import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ipos.pu.code.PRMPackage.dto.PromoRequest;
 import ipos.pu.code.PRMPackage.service.PromoService;
+import ipos.pu.code.model.Promotion;
 
 @RestController
 @RequestMapping("/promo")
@@ -38,6 +42,10 @@ public class PromoController {
         }
 
         return promoService.cancelPromotion(name);
+    }
+    @GetMapping("/all")
+    public List<Promotion> getAll() {
+        return promoService.getAll();
     }
 
 }

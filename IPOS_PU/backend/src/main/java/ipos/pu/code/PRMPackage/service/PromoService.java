@@ -1,8 +1,11 @@
 package ipos.pu.code.PRMPackage.service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import ipos.pu.code.PRMPackage.repository.PromoRepository;
+import ipos.pu.code.model.Promotion;
+import ipos.pu.code.model.PromotionProduct;
 
 public class PromoService {
     private final PromoRepository promoRepository = new PromoRepository();
@@ -38,4 +41,7 @@ public class PromoService {
             return "error";
         }
     }
+    public List<Promotion> getAll() {
+    return promoRepository.getAll();
+}
 }
