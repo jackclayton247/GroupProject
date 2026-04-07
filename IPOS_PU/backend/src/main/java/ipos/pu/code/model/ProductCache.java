@@ -31,6 +31,9 @@ public class ProductCache {
     @Column(name = "is_active")
     private int isActive;
 
+    @Column(name = "pending_stock_change")
+    private int pendingStockChange;
+
     public int getProductId() { return productId; }
     public String getItemId() { return itemId; }
     public String getDescription() { return description; }
@@ -39,4 +42,5 @@ public class ProductCache {
     public double getPrice() { return price; }
     public int getStockQuantity() { return stockQuantity; }
     public int getIsActive() { return isActive; }
+    public int getPendingStockChange() { return pendingStockChange; }
 }

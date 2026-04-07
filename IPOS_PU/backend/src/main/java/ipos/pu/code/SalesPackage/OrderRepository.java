@@ -60,11 +60,12 @@ public class OrderRepository {
     }
 
     public void deductStock(int productId, int quantity) {
-        String sql = "UPDATE product_cache SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
+        String sql = "UPDATE product_cache SET stock_quantity = stock_quantity - ?, pending_stock_change = pending_stock_change - ? WHERE product_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, quantity);
-            pst.setInt(2, productId);
+            pst.setInt(2, quantity);
+            pst.setInt(3, productId);
             pst.executeUpdate();
         } catch (Exception e) {
             e.printStackTrace();
@@ -125,26 +126,54 @@ public class OrderRepository {
     }
 
     public String getUndeliveredOrders() {
-    String sql = "SELECT o.order_id, o.user_email, o.delivery_address, o.order_date, o.total_price, o.status, oi.product_id, oi.quantity, oi.unit_price FROM orders o JOIN order_items oi ON o.order_id = oi.order_id WHERE o.status = 'received'";
-    StringBuilder result = new StringBuilder("[");
-    try (Connection conn = DatabaseConfig.getConnection();
-         PreparedStatement pst = conn.prepareStatement(sql)) {
-        ResultSet rs = pst.executeQuery();
-        boolean first = true;
-        while (rs.next()) {
-            if (!first) result.append(",");
-            result.append("{")
-                .append("\"orderId\":").append(rs.getInt("order_id")).append(",")
-                .append("\"userEmail\":\"").append(rs.getString("user_email")).append("\",")
-                .append("\"deliveryAddress\":\"").append(rs.getString("delivery_address")).append("\",")
-                .append("\"orderDate\":\"").append(rs.getString("order_date")).append("\",")
-                .append("\"totalPrice\":").append(rs.getDouble("total_price")).append(",")
-                .append("\"status\":\"").append(rs.getString("status")).append("\",")
-                .append("\"productId\":").append(rs.getInt("product_id")).append(",")
-                .append("\"quantity\":").append(rs.getInt("quantity")).append(",")
-                .append("\"unitPrice\":").append(rs.getDouble("unit_price"))
-                .append("}");
-            first = false;
+        String sql = "SELECT o.order_id, o.user_email, o.delivery_address, o.order_date, o.total_price, o.status, " +
+                     "oi.product_id, oi.quantity, oi.unit_price, COALESCE(pc.description, CONCAT('Product #', oi.product_id)) as product_name " +
+                     "FROM orders o " +
+                     "JOIN order_items oi ON o.order_id = oi.order_id " +
+                     "LEFT JOIN product_cache pc ON oi.product_id = pc.product_id " +
+                     "WHERE o.status = 'received' " +
+                     "ORDER BY o.order_id";
+        
+        java.util.LinkedHashMap<Integer, StringBuilder> orderMap = new java.util.LinkedHashMap<>();
+        java.util.Map<Integer, StringBuilder> itemsMap = new java.util.HashMap<>();
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                int orderId = rs.getInt("order_id");
+                
+                if (!orderMap.containsKey(orderId)) {
+                    StringBuilder orderJson = new StringBuilder();
+                    orderJson.append("{")
+                        .append("\"orderId\":").append(orderId).append(",")
+                        .append("\"memberName\":\"").append(rs.getString("user_email")).append("\",")
+                        .append("\"deliveryAddress\":\"").append(rs.getString("delivery_address")).append("\",")
+                        .append("\"orderDate\":\"").append(rs.getString("order_date")).append("\",")
+                        .append("\"totalValue\":").append(rs.getDouble("total_price")).append(",")
+                        .append("\"status\":\"").append(rs.getString("status")).append("\"");
+                    orderMap.put(orderId, orderJson);
+                    itemsMap.put(orderId, new StringBuilder());
+                }
+                
+                StringBuilder items = itemsMap.get(orderId);
+                if (items.length() > 0) items.append(",");
+                items.append("{")
+                    .append("\"productName\":\"").append(rs.getString("product_name")).append("\",")
+                    .append("\"productId\":").append(rs.getInt("product_id")).append(",")
+                    .append("\"quantity\":").append(rs.getInt("quantity")).append(",")
+                    .append("\"unitPrice\":").append(rs.getDouble("unit_price"))
+                    .append("}");
+            }
+            
+            StringBuilder result = new StringBuilder("[");
+            boolean first = true;
+            for (Integer orderId : orderMap.keySet()) {
+                if (!first) result.append(",");
+                result.append(orderMap.get(orderId));
+                result.append(",\"items\":[").append(itemsMap.get(orderId)).append("]}");
+                first = false;
             }
             result.append("]");
             return result.toString();
