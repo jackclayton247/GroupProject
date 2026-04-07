@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ipos.pu.code.PRMPackage.dto.PromoRequest;
 import ipos.pu.code.PRMPackage.service.PromoService;
 import ipos.pu.code.model.Promotion;
+import ipos.pu.code.model.PromotionProduct;
 
 @RestController
 @RequestMapping("/promo")
@@ -44,7 +45,7 @@ public class PromoController {
         return promoService.cancelPromotion(name);
     }
     @GetMapping("/all")
-    public List<Promotion> getAll() {
+    public List<PromotionProduct> getAll() {
         return promoService.getAll();
     }
 

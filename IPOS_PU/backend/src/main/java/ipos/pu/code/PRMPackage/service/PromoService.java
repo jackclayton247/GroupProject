@@ -41,7 +41,7 @@ public class PromoService {
             return "error";
         }
     }
-    public List<Promotion> getAll() {
-    return promoRepository.getAll();
-}
+    public List<PromotionProduct> getAll() {
+        return promoRepository.getAll();
+    }
 }
