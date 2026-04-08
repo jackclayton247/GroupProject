@@ -45,10 +45,10 @@ function Header() {
             <li><Link to="/products" className={location.pathname === '/products' ? 'active' : ''}>Products</Link></li>
             <li><Link to="/promotions" className={location.pathname === '/promotions' ? 'active' : ''}>Promotions</Link></li>
             <li><Link to="/track-order" className={location.pathname === '/track-order' ? 'active' : ''}>Track Order</Link></li>
-            <li><Link to="/login" className={location.pathname === '/login' ? 'active' : ''}>Admin / Login</Link></li>
+            <li><Link to="/purchase-history" className={location.pathname === '/purchase-history' ? 'active' : ''}>Purchase History</Link></li>
           </ul>
           <div className="nav-right">
-            <Link to="/login" className="nav-login-btn">Admin/Login</Link>
+            <Link to="/merchant" className="nav-login-btn">Merchant Login</Link>
             <Link to="/cart" className="cart-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>

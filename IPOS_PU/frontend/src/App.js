@@ -2,6 +2,9 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Header from './components/Header';
 import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
+import PromotionsPage from './pages/PromotionsPage';
+import PurchaseHistoryPage from './pages/PurchaseHistoryPage';
+import MerchantDashboard from './pages/MerchantDashboard';
 import './App.css';
 
 const bestSellers = [
@@ -56,6 +59,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/products" element={<ProductsPage />} />
+            <Route path="/promotions" element={<PromotionsPage />} />
+            <Route path="/purchase-history" element={<PurchaseHistoryPage />} />
+            <Route path="/merchant" element={<MerchantDashboard />} />
           </Routes>
         </main>
       </div>
