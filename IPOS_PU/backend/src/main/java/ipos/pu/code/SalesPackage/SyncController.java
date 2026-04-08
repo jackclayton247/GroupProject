@@ -81,34 +81,108 @@ public class SyncController {
     public String updateCache(@RequestBody String productsJson) {
         try {
             org.json.JSONArray arr = new org.json.JSONArray(productsJson);
-            String sql = "INSERT INTO product_cache (product_id, item_id, description, package_type, units_in_pack, price, vat_rate, stock_quantity, min_stock_level, is_active, pending_stock_change) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) " +
-                         "ON DUPLICATE KEY UPDATE item_id=VALUES(item_id), description=VALUES(description), package_type=VALUES(package_type), " +
-                         "units_in_pack=VALUES(units_in_pack), price=VALUES(price), vat_rate=VALUES(vat_rate), stock_quantity=VALUES(stock_quantity), " +
-                         "min_stock_level=VALUES(min_stock_level), is_active=VALUES(is_active)";
+            int updated = 0;
+            int inserted = 0;
             
-            try (Connection conn = DatabaseConfig.getConnection();
-                 PreparedStatement pst = conn.prepareStatement(sql)) {
-                for (int i = 0; i < arr.length(); i++) {
-                    org.json.JSONObject p = arr.getJSONObject(i);
-                    pst.setInt(1, p.getInt("productId"));
-                    pst.setString(2, p.getString("itemId"));
-                    pst.setString(3, p.getString("description"));
-                    pst.setString(4, p.optString("packageType", ""));
-                    pst.setInt(5, p.optInt("unitsInPack", 1));
-                    pst.setDouble(6, p.getDouble("price"));
-                    pst.setDouble(7, p.optDouble("vatRate", 0.0));
-                    pst.setInt(8, p.getInt("stockQuantity"));
-                    pst.setInt(9, p.optInt("minStockLevel", 0));
-                    pst.setInt(10, p.optInt("isActive", 1));
-                    pst.addBatch();
+            try (Connection conn = DatabaseConfig.getConnection()) {
+                // First try to UPDATE existing products by item_id
+                String updateSql = "UPDATE product_cache SET description=?, package_type=?, " +
+                         "units_in_pack=?, price=?, vat_rate=?, stock_quantity=?, " +
+                         "min_stock_level=?, is_active=?, pending_stock_change=0 WHERE item_id=?";
+                
+                // If no rows updated, INSERT new product
+                String insertSql = "INSERT INTO product_cache (item_id, description, package_type, units_in_pack, " +
+                         "price, vat_rate, stock_quantity, min_stock_level, is_active, pending_stock_change) " +
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+                
+                try (PreparedStatement updateStmt = conn.prepareStatement(updateSql);
+                     PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    
+                    for (int i = 0; i < arr.length(); i++) {
+                        org.json.JSONObject p = arr.getJSONObject(i);
+                        String itemId = p.getString("itemId");
+                        
+                        // Try UPDATE first
+                        updateStmt.setString(1, p.getString("description"));
+                        updateStmt.setString(2, p.optString("packageType", ""));
+                        updateStmt.setInt(3, p.optInt("unitsInPack", 1));
+                        updateStmt.setDouble(4, p.getDouble("price"));
+                        updateStmt.setDouble(5, p.optDouble("vatRate", 0.0));
+                        updateStmt.setInt(6, p.getInt("stockQuantity"));
+                        updateStmt.setInt(7, p.optInt("minStockLevel", 0));
+                        updateStmt.setInt(8, p.optInt("isActive", 1));
+                        updateStmt.setString(9, itemId);
+                        
+                        int rows = updateStmt.executeUpdate();
+                        if (rows > 0) {
+                            updated++;
+                        } else {
+                            // Product doesn't exist, INSERT it
+                            insertStmt.setString(1, itemId);
+                            insertStmt.setString(2, p.getString("description"));
+                            insertStmt.setString(3, p.optString("packageType", ""));
+                            insertStmt.setInt(4, p.optInt("unitsInPack", 1));
+                            insertStmt.setDouble(5, p.getDouble("price"));
+                            insertStmt.setDouble(6, p.optDouble("vatRate", 0.0));
+                            insertStmt.setInt(7, p.getInt("stockQuantity"));
+                            insertStmt.setInt(8, p.optInt("minStockLevel", 0));
+                            insertStmt.setInt(9, p.optInt("isActive", 1));
+                            insertStmt.executeUpdate();
+                            inserted++;
+                        }
+                    }
                 }
-                pst.executeBatch();
-                return "cache updated with " + arr.length() + " products";
             }
+            return "cache updated: " + updated + " updated, " + inserted + " inserted";
         } catch (Exception e) {
             e.printStackTrace();
             return "error: " + e.getMessage();
         }
+    }
+
+    /**
+     * Returns full product cache for CA to pull when reconnecting.
+     * CA uses this to reconcile offline changes.
+     */
+    @GetMapping("/cache")
+    public String getFullCache() {
+        String sql = "SELECT product_id, item_id, description, package_type, units_in_pack, price, vat_rate, stock_quantity, min_stock_level, is_active FROM product_cache WHERE is_active = 1";
+        StringBuilder result = new StringBuilder("[");
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            ResultSet rs = pst.executeQuery();
+            boolean first = true;
+            while (rs.next()) {
+                if (!first) result.append(",");
+                result.append("{")
+                    .append("\"productId\":").append(rs.getInt("product_id")).append(",")
+                    .append("\"itemId\":\"").append(rs.getString("item_id")).append("\",")
+                    .append("\"description\":\"").append(rs.getString("description")).append("\",")
+                    .append("\"packageType\":\"").append(rs.getString("package_type")).append("\",")
+                    .append("\"unitsInPack\":").append(rs.getInt("units_in_pack")).append(",")
+                    .append("\"price\":").append(rs.getDouble("price")).append(",")
+                    .append("\"vatRate\":").append(rs.getDouble("vat_rate")).append(",")
+                    .append("\"stockQuantity\":").append(rs.getInt("stock_quantity")).append(",")
+                    .append("\"minStockLevel\":").append(rs.getInt("min_stock_level")).append(",")
+                    .append("\"isActive\":").append(rs.getInt("is_active"))
+                    .append("}");
+                first = false;
+            }
+            result.append("]");
+            return result.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "[]";
+        }
+    }
+
+    /**
+     * Health check endpoint for CA to ping.
+     * Returns "pong" if PU is online.
+     */
+    @GetMapping("/ping")
+    public String ping() {
+        return "pong";
     }
 }

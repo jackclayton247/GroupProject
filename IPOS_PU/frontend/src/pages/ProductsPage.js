@@ -18,9 +18,12 @@ function ProductsPage() {
         .then(res => res.json())
         .then(data => {
             console.log(data);
-            setProducts(data);
+            setProducts(Array.isArray(data) ? data : []);
         })
-        .catch(err => console.error("Fetch error:", err));
+        .catch(err => {
+            console.error("Fetch error:", err);
+            setProducts([]);
+        });
 }, [selectedCategory]);
 
     const filtered = products.filter(p =>
@@ -70,7 +73,7 @@ function ProductsPage() {
                         <p className="product-id">ID: {p.itemId}</p>
                         <p className="product-detail">Package: {p.packageType} ({p.unitsInPack} units/pack)</p>
                         <p className="product-price">£{p.price.toFixed(2)} per pack</p>
-                        <p className="product-stock">✓ {p.availability} packs in stock</p>
+                        <p className="product-stock">✓ {p.stockQuantity} packs in stock</p>
                         <button>Add to Cart</button>
                         </div>
                 ))}

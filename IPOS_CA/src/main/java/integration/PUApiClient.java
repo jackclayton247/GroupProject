@@ -177,6 +177,27 @@ public class PUApiClient {
     }
 
     /**
+     * Fetches full product cache from PU.
+     * CA calls this on startup to reconcile offline sales.
+     */
+    public static JSONArray getFullCache() {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "/api/sync/cache"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                return new JSONArray(response.body());
+            }
+        } catch (Exception e) {
+            System.err.println("[PUApiClient] getFullCache failed: " + e.getMessage());
+        }
+        return new JSONArray();
+    }
+
+    /**
      * Pushes CA's product catalog to PU cache.
      */
     public static boolean pushProductsToCache(String productsJson) {

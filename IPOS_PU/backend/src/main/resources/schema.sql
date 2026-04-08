@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS product_cache (
     vat_rate DECIMAL(5,2) NOT NULL DEFAULT 0.00 CHECK (vat_rate >= 0),
     stock_quantity INT NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
     min_stock_level INT NOT NULL DEFAULT 0 CHECK (min_stock_level >= 0),
-    is_active TINYINT(1) NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))
+    is_active TINYINT(1) NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+    pending_stock_change INT NOT NULL DEFAULT 0 CHECK (pending_stock_change >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS `user` (
