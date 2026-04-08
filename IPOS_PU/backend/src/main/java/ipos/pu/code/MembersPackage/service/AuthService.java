@@ -13,4 +13,8 @@ public class AuthService {
         return userRepository.validateUser(email, password);
     }
 
+    public boolean getMerchant(String email) {
+        return userRepository.getMerchant(email);
+    }
+
 }

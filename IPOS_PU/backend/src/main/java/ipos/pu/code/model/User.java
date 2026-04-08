@@ -9,5 +9,8 @@ public class User {
     private String email;
     private String password;
     private int orderNumber;
+    private boolean merchant;
 
+    public boolean isMerchant() { return merchant; }
+    public void setMerchant(boolean merchant) { this.merchant = merchant; }
 }

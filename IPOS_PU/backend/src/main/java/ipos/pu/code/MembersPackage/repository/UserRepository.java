@@ -9,7 +9,7 @@ import ipos.pu.code.config.DatabaseConfig;
 public class UserRepository {
 
     public int addUser(String email, String password) {
-        String sql = "INSERT INTO user (email, password) VALUES (?, ?)";
+        String sql = "INSERT INTO user (email, password, merchant) VALUES (?, ?, false)";
 
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 
@@ -57,9 +57,24 @@ public class UserRepository {
             }
         }
         catch (Exception e) {
-            e.printStackTrace(); 
+            e.printStackTrace();
             return 3;
         }
-            
+
+    }
+
+    public boolean getMerchant(String email) {
+        String sql = "SELECT merchant FROM user WHERE email = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("merchant");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

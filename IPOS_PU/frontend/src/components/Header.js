@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import './Header.css';
 
 function Header() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  const { isLoggedIn, userEmail, logout } = useAuth();
+  const { totalItems } = useCart();
 
   return (
     <header className="header">
@@ -27,12 +31,19 @@ function Header() {
             </button>
           </div>
           <div className="header-actions">
-            <Link to="/login" className="commercial-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-              </svg>
-              Apply for Commercial Membership
-            </Link>
+            {isLoggedIn ? (
+              <div className="header-user">
+                <span className="header-user-email">{userEmail}</span>
+                <button className="commercial-btn" onClick={logout}>Sign Out</button>
+              </div>
+            ) : (
+              <Link to="/login" className="commercial-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                </svg>
+                Sign In
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -55,6 +66,7 @@ function Header() {
                 <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
               </svg>
               Cart
+              {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
             </Link>
           </div>
         </div>

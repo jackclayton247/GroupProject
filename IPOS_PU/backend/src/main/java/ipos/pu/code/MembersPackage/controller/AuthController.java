@@ -18,31 +18,31 @@ public class AuthController {
     private final AuthService authService = new AuthService();
 
     @PostMapping("/login")
-    public String login(@RequestBody Map<String, String> request, HttpSession session) {
+    public Map<String, Object> login(@RequestBody Map<String, String> request, HttpSession session) {
 
         System.out.println("Login endpoint hit");
 
         String email = request.get("email");
         String password = request.get("password");
 
-        //check for null
         if (email == null || password == null) {
-            return "Missing email or password";
+            return Map.of("success", false, "message", "Missing email or password");
         }
 
         int outcome = authService.login(email, password);
-        
-        //success
+
         if (outcome == 0) {
-            //create session
             session.setAttribute("userEmail", email);
-            return "session created";
+            boolean merchant = authService.getMerchant(email);
+            return Map.of("success", true, "email", email, "merchant", merchant);
+        } else if (outcome == 1) {
+            return Map.of("success", false, "message", "Password is incorrect");
+        } else if (outcome == 2) {
+            return Map.of("success", false, "message", "User not found");
+        } else {
+            return Map.of("success", false, "message", "Unknown error");
         }
-        //errors
-        else if (outcome == 1) {return "password is incorrect";}
-        else if (outcome == 2) {return "user not found";}
-        else {return "unknown error";}
-        
+
     }
     @PostMapping("/signup")
     public String signup(@RequestBody Map<String, String> request) {

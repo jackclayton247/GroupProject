@@ -15,8 +15,12 @@ CREATE TABLE IF NOT EXISTS product_cache (
 CREATE TABLE IF NOT EXISTS `user` (
     email VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
-    orderNumber INT NOT NULL DEFAULT 0
+    orderNumber INT NOT NULL DEFAULT 0,
+    merchant BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+-- Add merchant column to existing tables that were created without it
+ALTER TABLE `user` ADD COLUMN IF NOT EXISTS merchant BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE IF NOT EXISTS promotion (
     name VARCHAR(255) PRIMARY KEY,

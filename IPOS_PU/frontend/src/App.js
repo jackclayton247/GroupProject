@@ -5,6 +5,9 @@ import ProductsPage from './pages/ProductsPage';
 import PromotionsPage from './pages/PromotionsPage';
 import PurchaseHistoryPage from './pages/PurchaseHistoryPage';
 import MerchantDashboard from './pages/MerchantDashboard';
+import CartPage from './pages/CartPage';
+import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
 import './App.css';
 
 const bestSellers = [
@@ -51,21 +54,26 @@ function Home() {
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/products" element={<ProductsPage />} />
-            <Route path="/promotions" element={<PromotionsPage />} />
-            <Route path="/purchase-history" element={<PurchaseHistoryPage />} />
-            <Route path="/merchant" element={<MerchantDashboard />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+    <AuthProvider>
+      <CartProvider>
+        <Router>
+          <div className="App">
+            <Header />
+            <main>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/products" element={<ProductsPage />} />
+                <Route path="/promotions" element={<PromotionsPage />} />
+                <Route path="/purchase-history" element={<PurchaseHistoryPage />} />
+                <Route path="/merchant" element={<MerchantDashboard />} />
+                <Route path="/cart" element={<CartPage />} />
+              </Routes>
+            </main>
+          </div>
+        </Router>
+      </CartProvider>
+    </AuthProvider>
   );
 }
 

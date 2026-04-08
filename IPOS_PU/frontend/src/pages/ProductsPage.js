@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useCart } from '../context/CartContext';
 import './ProductsPage.css';
 
 const categories = [
@@ -12,6 +13,7 @@ function ProductsPage() {
     const [selectedCategory, setSelectedCategory] = useState("100");
     const [search, setSearch] = useState("");
     const [products, setProducts] = useState([]);
+    const { addToCart } = useCart();
 
     useEffect(() => {
     fetch(`http://localhost:8080/api/products?category=${selectedCategory}`)
@@ -74,7 +76,7 @@ function ProductsPage() {
                         <p className="product-detail">Package: {p.packageType} ({p.unitsInPack} units/pack)</p>
                         <p className="product-price">£{p.price.toFixed(2)} per pack</p>
                         <p className="product-stock">✓ {p.stockQuantity} packs in stock</p>
-                        <button>Add to Cart</button>
+                        <button onClick={() => addToCart(p.productId, p.description, p.price)}>Add to Cart</button>
                         </div>
                 ))}
             </div>

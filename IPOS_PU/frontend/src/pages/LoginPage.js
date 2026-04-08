@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -41,9 +43,8 @@ function LoginPage() {
         }),
       });
 
-      const text = await response.text();
-
       if (isRegister) {
+        const text = await response.text();
         if (text === 'account created') {
           setSuccess('Account created! You can now sign in.');
           setIsRegister(false);
@@ -52,10 +53,12 @@ function LoginPage() {
           setError(text);
         }
       } else {
-        if (text === 'session created') {
+        const data = await response.json();
+        if (data.success) {
+          login(data.email, data.merchant);
           navigate('/');
         } else {
-          setError(text);
+          setError(data.message || 'Login failed');
         }
       }
     } catch (err) {

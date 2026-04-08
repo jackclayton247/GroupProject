@@ -1,4 +1,8 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import MerchantDashboard from './MerchantDashboard';
 import './PromotionsPage.css';
 
 const mockCampaigns = [
@@ -8,9 +12,9 @@ const mockCampaigns = [
     startDate: '2026-04-01',
     endDate: '2026-04-30',
     items: [
-      { itemId: '100 00001', description: 'Paracetamol', unitCost: 0.10, discount: 20, availability: 500 },
-      { itemId: '100 00002', description: 'Aspirin', unitCost: 0.50, discount: 15, availability: 300 },
-      { itemId: '400 00001', description: 'Vitamin C', unitCost: 1.20, discount: 10, availability: 200 },
+      { productId: 1, itemId: '100 00001', description: 'Paracetamol', unitCost: 0.10, discount: 20, availability: 500 },
+      { productId: 2, itemId: '100 00002', description: 'Aspirin', unitCost: 0.50, discount: 15, availability: 300 },
+      { productId: 3, itemId: '400 00001', description: 'Vitamin C', unitCost: 1.20, discount: 10, availability: 200 },
     ],
   },
   {
@@ -19,25 +23,23 @@ const mockCampaigns = [
     startDate: '2026-04-08',
     endDate: '2026-04-15',
     items: [
-      { itemId: '400 00002', description: 'Vitamin B12', unitCost: 1.30, discount: 25, availability: 150 },
-      { itemId: '200 00005', description: 'Rhynol', unitCost: 2.50, discount: 10, availability: 180 },
+      { productId: 4, itemId: '400 00002', description: 'Vitamin B12', unitCost: 1.30, discount: 25, availability: 150 },
+      { productId: 5, itemId: '200 00005', description: 'Rhynol', unitCost: 2.50, discount: 10, availability: 180 },
     ],
   },
 ];
 
-function PromotionsPage() {
+function PublicPromotionsView() {
   const [selectedCampaign, setSelectedCampaign] = useState(null);
-  const [cart, setCart] = useState({});
-
-  const addToCart = (itemId, description) => {
-    setCart(prev => ({
-      ...prev,
-      [itemId]: { description, qty: (prev[itemId]?.qty || 0) + 1 },
-    }));
-  };
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   const discountedPrice = (price, discount) =>
-    (price * (1 - discount / 100)).toFixed(2);
+    parseFloat((price * (1 - discount / 100)).toFixed(2));
+
+  const handleAddToCart = (item) => {
+    addToCart(item.productId, item.description, discountedPrice(item.unitCost, item.discount));
+  };
 
   return (
     <div className="promotions-page">
@@ -47,7 +49,6 @@ function PromotionsPage() {
       </div>
 
       <div className="promotions-container">
-        {/* Campaign List */}
         <div className="campaigns-list">
           {mockCampaigns.map(camp => (
             <div
@@ -69,7 +70,6 @@ function PromotionsPage() {
           ))}
         </div>
 
-        {/* Campaign Items */}
         {selectedCampaign && (
           <div className="campaign-detail">
             <h2 className="campaign-detail-title">{selectedCampaign.name} — Promoted Items</h2>
@@ -81,12 +81,12 @@ function PromotionsPage() {
                   <p className="promo-item-id">ID: {item.itemId}</p>
                   <div className="promo-pricing">
                     <span className="promo-original-price">&pound;{item.unitCost.toFixed(2)}</span>
-                    <span className="promo-sale-price">&pound;{discountedPrice(item.unitCost, item.discount)}</span>
+                    <span className="promo-sale-price">&pound;{discountedPrice(item.unitCost, item.discount).toFixed(2)}</span>
                   </div>
                   <p className="promo-stock">{item.availability} packs available</p>
                   <button
                     className="promo-add-btn"
-                    onClick={() => addToCart(item.itemId, item.description)}
+                    onClick={() => handleAddToCart(item)}
                   >
                     Add to Cart
                   </button>
@@ -95,22 +95,19 @@ function PromotionsPage() {
             </div>
           </div>
         )}
-
-        {/* Mini Cart Summary */}
-        {Object.keys(cart).length > 0 && (
-          <div className="promo-cart-summary">
-            <h3>Cart</h3>
-            <ul>
-              {Object.entries(cart).map(([id, { description, qty }]) => (
-                <li key={id}>{description} &times; {qty}</li>
-              ))}
-            </ul>
-            <button className="promo-checkout-btn">Proceed to Checkout</button>
-          </div>
-        )}
       </div>
     </div>
   );
+}
+
+function PromotionsPage() {
+  const { isMerchant } = useAuth();
+
+  if (isMerchant) {
+    return <MerchantDashboard />;
+  }
+
+  return <PublicPromotionsView />;
 }
 
 export default PromotionsPage;
