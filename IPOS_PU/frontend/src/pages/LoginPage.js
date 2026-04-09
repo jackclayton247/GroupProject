@@ -37,6 +37,7 @@ function LoginPage() {
       const response = await fetch(`http://localhost:8080${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
