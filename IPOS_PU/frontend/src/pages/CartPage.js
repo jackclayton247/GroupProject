@@ -35,13 +35,36 @@ function CartPage() {
       return;
     }
 
+    if (!userEmail) {
+      setError('User email not found. Please log in again.');
+      return;
+    }
+
     if (cart.length === 0) {
       setError('Your cart is empty.');
       return;
     }
 
+    // Validation
+    if (!form.deliveryAddress.trim()) {
+      setError('Please enter a delivery address.');
+      return;
+    }
+    if (!form.cardFirstFour || form.cardFirstFour.length !== 4) {
+      setError('Please enter the first 4 digits of your card.');
+      return;
+    }
+    if (!form.cardLastFour || form.cardLastFour.length !== 4) {
+      setError('Please enter the last 4 digits of your card.');
+      return;
+    }
+    if (!form.cardExpiry || !form.cardExpiry.match(/^\d{2}\/\d{2}$/)) {
+      setError('Please enter expiry date in format MM/YY.');
+      return;
+    }
+
     const payload = {
-      userEmail,
+      userEmail: userEmail,
       deliveryAddress: form.deliveryAddress,
       cardType: form.cardType,
       cardFirstFour: form.cardFirstFour,
@@ -49,6 +72,11 @@ function CartPage() {
       cardExpiry: form.cardExpiry,
       items: cart.map(i => ({ productId: i.productId, quantity: i.quantity })),
     };
+
+    console.log('DEBUG - userEmail:', userEmail);
+    console.log('DEBUG - isLoggedIn:', isLoggedIn);
+    console.log('DEBUG - cart:', cart);
+    console.log('DEBUG - Submitting order payload:', JSON.stringify(payload, null, 2));
 
     setSubmitting(true);
     try {
@@ -58,179 +86,136 @@ function CartPage() {
         body: JSON.stringify(payload),
       });
 
+      const responseText = await res.text();
+      console.log('Response:', res.status, responseText);
+
       if (res.ok) {
         clearCart();
         setSuccess('Order placed successfully! Check your email for confirmation.');
         setForm({ deliveryAddress: '', cardType: 'VISA', cardFirstFour: '', cardLastFour: '', cardExpiry: '' });
       } else {
-        const text = await res.text();
-        setError(text || 'Failed to place order. Please try again.');
+        setError(responseText || `Failed to place order (HTTP ${res.status}). Please try again.`);
       }
-    } catch {
+    } catch (err) {
+      console.error('Order error:', err);
       setError('Could not connect to the server. Make sure the backend is running.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (success) {
-    return (
-      <div className="cart-page">
-        <div className="cart-success">
-          <div className="cart-success-icon">&#10003;</div>
-          <h2>Order Placed!</h2>
-          <p>{success}</p>
-          <div className="cart-success-actions">
-            <button className="cart-btn-primary" onClick={() => navigate('/purchase-history')}>View Orders</button>
-            <button className="cart-btn-secondary" onClick={() => navigate('/products')}>Continue Shopping</button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="cart-page">
-      <div className="cart-container">
-        {/* Left — Cart Items */}
-        <section className="cart-items-section">
-          <h1 className="cart-title">Your Cart</h1>
-
-          {cart.length === 0 ? (
-            <div className="cart-empty">
-              <p>Your cart is empty.</p>
-              <button className="cart-btn-primary" onClick={() => navigate('/products')}>Browse Products</button>
-            </div>
-          ) : (
-            <>
-              <div className="cart-items-list">
-                {cart.map(item => (
-                  <div key={item.productId} className="cart-item">
-                    <div className="cart-item-info">
-                      <h3 className="cart-item-name">{item.description}</h3>
-                      <p className="cart-item-price">&pound;{item.price.toFixed(2)} each</p>
-                    </div>
-                    <div className="cart-item-controls">
-                      <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>−</button>
-                      <span className="qty-value">{item.quantity}</span>
-                      <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>+</button>
-                    </div>
-                    <div className="cart-item-subtotal">
-                      &pound;{(item.price * item.quantity).toFixed(2)}
-                    </div>
-                    <button className="cart-item-remove" onClick={() => removeFromCart(item.productId)} aria-label="Remove">&#215;</button>
+      {/* Left — Cart Items */}
+      <section className="cart-section cart-left">
+        <h2 className="cart-heading">Shopping Cart</h2>
+        {cart.length === 0 ? (
+          <div className="cart-empty">
+            <p>Your cart is empty.</p>
+            <button className="cart-btn-primary" onClick={() => navigate('/products')}>Browse Products</button>
+          </div>
+        ) : (
+          <>
+            <div className="cart-items-list">
+              {cart.map(item => (
+                <div key={item.productId} className="cart-item">
+                  <div className="cart-item-info">
+                    <h3 className="cart-item-name">{item.description}</h3>
+                    <p className="cart-item-price">&pound;{(item.price || 0).toFixed(2)} each</p>
                   </div>
-                ))}
-              </div>
-
-              <div className="cart-total">
-                <span>Total</span>
-                <span>&pound;{totalPrice.toFixed(2)}</span>
-              </div>
-            </>
-          )}
-        </section>
-
-        {/* Right — Checkout Form */}
-        {cart.length > 0 && (
-          <section className="checkout-section">
-            <h2 className="checkout-title">Checkout</h2>
-
-            {!isLoggedIn && (
-              <div className="checkout-login-prompt">
-                Please <button className="checkout-login-link" onClick={() => navigate('/login')}>sign in</button> to place your order.
-              </div>
-            )}
-
-            {error && <p className="checkout-error">{error}</p>}
-
-            <form className="checkout-form" onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label htmlFor="deliveryAddress">Delivery Address</label>
-                <textarea
-                  id="deliveryAddress"
-                  name="deliveryAddress"
-                  placeholder="123 Example Street, London, EC1A 1BB"
-                  value={form.deliveryAddress}
-                  onChange={handleChange}
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <div className="checkout-section-label">Payment Details</div>
-
-              <div className="form-group">
-                <label htmlFor="cardType">Card Type</label>
-                <select id="cardType" name="cardType" value={form.cardType} onChange={handleChange}>
-                  {CARD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-
-              <div className="form-row-2">
-                <div className="form-group">
-                  <label htmlFor="cardFirstFour">First 4 Digits</label>
-                  <input
-                    id="cardFirstFour"
-                    name="cardFirstFour"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={4}
-                    placeholder="0000"
-                    value={form.cardFirstFour}
-                    onChange={handleChange}
-                    pattern="\d{4}"
-                    required
-                  />
+                  <div className="cart-item-controls">
+                    <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity - 1)}>−</button>
+                    <span className="qty-value">{item.quantity}</span>
+                    <button className="qty-btn" onClick={() => updateQuantity(item.productId, item.quantity + 1)}>+</button>
+                  </div>
+                  <div className="cart-item-subtotal">
+                    &pound;{((item.price || 0) * item.quantity).toFixed(2)}
+                  </div>
+                  <button className="cart-item-remove" onClick={() => removeFromCart(item.productId)} aria-label="Remove">&#215;</button>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="cardLastFour">Last 4 Digits</label>
-                  <input
-                    id="cardLastFour"
-                    name="cardLastFour"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={4}
-                    placeholder="1111"
-                    value={form.cardLastFour}
-                    onChange={handleChange}
-                    pattern="\d{4}"
-                    required
-                  />
-                </div>
-              </div>
+              ))}
+            </div>
 
-              <div className="form-group">
-                <label htmlFor="cardExpiry">Expiry Date</label>
-                <input
-                  id="cardExpiry"
-                  name="cardExpiry"
-                  type="text"
-                  placeholder="MM/YY"
-                  maxLength={5}
-                  value={form.cardExpiry}
-                  onChange={handleChange}
-                  pattern="\d{2}/\d{2}"
-                  required
-                />
-              </div>
-
-              <div className="checkout-summary">
-                <span>{cart.reduce((s, i) => s + i.quantity, 0)} item(s)</span>
-                <span className="checkout-total">&pound;{totalPrice.toFixed(2)}</span>
-              </div>
-
-              <button
-                type="submit"
-                className="checkout-submit-btn"
-                disabled={submitting || !isLoggedIn}
-              >
-                {submitting ? 'Placing Order…' : 'Place Order'}
-              </button>
-            </form>
-          </section>
+            <div className="cart-total">
+              <span>Total</span>
+              <span>&pound;{totalPrice.toFixed(2)}</span>
+            </div>
+          </>
         )}
-      </div>
+      </section>
+
+      {/* Right — Checkout Form */}
+      <section className="cart-section cart-right">
+        <h2 className="cart-heading">Checkout</h2>
+
+        {error && <div className="cart-error" style={{whiteSpace: 'pre-wrap', wordBreak: 'break-word'}}>{error}</div>}
+        {success && <div className="cart-success">{success}</div>}
+
+        <form onSubmit={handleSubmit} className="checkout-form">
+          <label className="form-label">Delivery Address</label>
+          <textarea
+            name="deliveryAddress"
+            className="form-input"
+            rows="3"
+            value={form.deliveryAddress}
+            onChange={handleChange}
+            required
+          />
+
+          <h3 className="form-subheading">Payment Details</h3>
+
+          <label className="form-label">Card Type</label>
+          <select name="cardType" className="form-input" value={form.cardType} onChange={handleChange}>
+            {CARD_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">First 4 Digits</label>
+              <input
+                name="cardFirstFour"
+                className="form-input"
+                maxLength="4"
+                value={form.cardFirstFour}
+                onChange={handleChange}
+                placeholder="1234"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Last 4 Digits</label>
+              <input
+                name="cardLastFour"
+                className="form-input"
+                maxLength="4"
+                value={form.cardLastFour}
+                onChange={handleChange}
+                placeholder="5678"
+                required
+              />
+            </div>
+          </div>
+
+          <label className="form-label">Expiry Date (MM/YY)</label>
+          <input
+            name="cardExpiry"
+            className="form-input"
+            placeholder="MM/YY"
+            value={form.cardExpiry}
+            onChange={handleChange}
+            required
+          />
+
+          <div className="cart-summary">
+            <span>{cart.reduce((sum, i) => sum + i.quantity, 0)} item(s)</span>
+            <span className="cart-summary-total">&pound;{totalPrice.toFixed(2)}</span>
+          </div>
+
+          <button type="submit" className="cart-btn-primary" disabled={submitting || cart.length === 0}>
+            {submitting ? 'Placing Order...' : 'Place Order'}
+          </button>
+        </form>
+      </section>
     </div>
   );
 }

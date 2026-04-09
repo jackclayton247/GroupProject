@@ -86,53 +86,45 @@ public class SyncController {
             int inserted = 0;
             
             try (Connection conn = DatabaseConfig.getConnection()) {
-                // First try to UPDATE existing products by item_id
-                String updateSql = "UPDATE product_cache SET description=?, package_type=?, " +
-                         "units_in_pack=?, price=?, vat_rate=?, stock_quantity=?, " +
-                         "min_stock_level=?, is_active=?, pending_stock_change=0 WHERE item_id=?";
-                
-                // If no rows updated, INSERT new product
-                String insertSql = "INSERT INTO product_cache (item_id, description, package_type, units_in_pack, " +
+                // Use INSERT ... ON DUPLICATE KEY UPDATE for atomic upsert
+                // This handles both insert and update in one statement
+                String upsertSql = "INSERT INTO product_cache (product_id, item_id, description, package_type, units_in_pack, " +
                          "price, vat_rate, stock_quantity, min_stock_level, is_active, pending_stock_change) " +
-                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0) " +
+                         "ON DUPLICATE KEY UPDATE " +
+                         "item_id=VALUES(item_id), description=VALUES(description), package_type=VALUES(package_type), " +
+                         "units_in_pack=VALUES(units_in_pack), price=VALUES(price), " +
+                         "vat_rate=VALUES(vat_rate), stock_quantity=VALUES(stock_quantity), " +
+                         "min_stock_level=VALUES(min_stock_level), is_active=VALUES(is_active), " +
+                         "pending_stock_change=0";
                 
-                try (PreparedStatement updateStmt = conn.prepareStatement(updateSql);
-                     PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                try (PreparedStatement stmt = conn.prepareStatement(upsertSql)) {
                     
                     for (int i = 0; i < arr.length(); i++) {
                         org.json.JSONObject p = arr.getJSONObject(i);
                         String itemId = p.getString("itemId");
+                        int productId = p.getInt("productId");
                         int stockQty = p.getInt("stockQuantity");
                         
-                        // Try UPDATE first
-                        updateStmt.setString(1, p.getString("description"));
-                        updateStmt.setString(2, p.optString("packageType", ""));
-                        updateStmt.setInt(3, p.optInt("unitsInPack", 1));
-                        updateStmt.setDouble(4, p.getDouble("price"));
-                        updateStmt.setDouble(5, p.optDouble("vatRate", 0.0));
-                        updateStmt.setInt(6, stockQty);
-                        updateStmt.setInt(7, p.optInt("minStockLevel", 0));
-                        updateStmt.setInt(8, p.optInt("isActive", 1));
-                        updateStmt.setString(9, itemId);
+                        stmt.setInt(1, productId);
+                        stmt.setString(2, itemId);
+                        stmt.setString(3, p.getString("description"));
+                        stmt.setString(4, p.optString("packageType", ""));
+                        stmt.setInt(5, p.optInt("unitsInPack", 1));
+                        stmt.setDouble(6, p.getDouble("price"));
+                        stmt.setDouble(7, p.optDouble("vatRate", 0.0));
+                        stmt.setInt(8, stockQty);
+                        stmt.setInt(9, p.optInt("minStockLevel", 0));
+                        stmt.setInt(10, p.optInt("isActive", 1));
                         
-                        int rows = updateStmt.executeUpdate();
-                        if (rows > 0) {
-                            System.out.println("[SyncController] Updated product " + itemId + " with stock: " + stockQty);
-                            updated++;
-                        } else {
-                            // Product doesn't exist, INSERT it
-                            insertStmt.setString(1, itemId);
-                            insertStmt.setString(2, p.getString("description"));
-                            insertStmt.setString(3, p.optString("packageType", ""));
-                            insertStmt.setInt(4, p.optInt("unitsInPack", 1));
-                            insertStmt.setDouble(5, p.getDouble("price"));
-                            insertStmt.setDouble(6, p.optDouble("vatRate", 0.0));
-                            insertStmt.setInt(7, stockQty);
-                            insertStmt.setInt(8, p.optInt("minStockLevel", 0));
-                            insertStmt.setInt(9, p.optInt("isActive", 1));
-                            insertStmt.executeUpdate();
-                            System.out.println("[SyncController] Inserted new product " + itemId + " with stock: " + stockQty);
+                        int rows = stmt.executeUpdate();
+                        // MySQL returns: 1 = inserted, 2 = updated (for ON DUPLICATE KEY UPDATE)
+                        if (rows == 1) {
+                            System.out.println("[SyncController] Inserted product " + itemId + " (ID=" + productId + ") stock=" + stockQty);
                             inserted++;
+                        } else {
+                            System.out.println("[SyncController] Updated product " + itemId + " (ID=" + productId + ") stock=" + stockQty);
+                            updated++;
                         }
                     }
                 }
@@ -140,6 +132,7 @@ public class SyncController {
             String result = "cache updated: " + updated + " updated, " + inserted + " inserted";
             System.out.println("[SyncController] " + result);
             return result;
+            
         } catch (Exception e) {
             System.err.println("[SyncController] Error in updateCache: " + e.getMessage());
             e.printStackTrace();

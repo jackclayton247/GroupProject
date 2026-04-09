@@ -4,6 +4,8 @@ import java.util.Map;
 import ipos.pu.code.config.DatabaseConfig;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Connection;
@@ -25,10 +27,34 @@ public class OrderController {
     }
 
     @PostMapping
-    public String placeOrder(@RequestBody OrderRequest request) {
-        int orderId = orderService.placeOrder(request);
-        if (orderId == -1) return "error placing order";
-        return "order placed, id: " + orderId;
+    public ResponseEntity<String> placeOrder(@RequestBody OrderRequest request) {
+        System.out.println("[OrderController] Received order request: " + request);
+        
+        // Validate request
+        if (request == null) {
+            return ResponseEntity.badRequest().body("Request body is null");
+        }
+        if (request.getItems() == null || request.getItems().isEmpty()) {
+            return ResponseEntity.badRequest().body("Order items are required");
+        }
+        if (request.getDeliveryAddress() == null || request.getDeliveryAddress().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Delivery address is required");
+        }
+        if (request.getCardFirstFour() == null || request.getCardLastFour() == null || request.getCardExpiry() == null) {
+            return ResponseEntity.badRequest().body("Card details are required");
+        }
+        
+        try {
+            int orderId = orderService.placeOrder(request);
+            if (orderId == -1) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error placing order - check product availability");
+            }
+            return ResponseEntity.ok("order placed, id: " + orderId);
+        } catch (Exception e) {
+            System.err.println("[OrderController] Error placing order: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
 
     @GetMapping("/undelivered")

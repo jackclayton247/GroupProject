@@ -63,31 +63,27 @@ public class OrderService {
         boolean caOnline = caService.isCAOnline();
         
         if (caOnline) {
-            // CA is online - forward order to CA, CA handles stock
-            System.out.println("[OrderService] CA is online - forwarding order to CA");
-            // Build order JSON for CA
-            StringBuilder orderJson = new StringBuilder("{");
-            orderJson.append("\"items\":[");
-            for (int i = 0; i < items.size(); i++) {
-                if (i > 0) orderJson.append(",");
-                orderJson.append("{\"productId\":").append(items.get(i).getProductId())
-                         .append(",\"quantity\":").append(items.get(i).getQuantity()).append("}");
-            }
-            orderJson.append("],\"total\":").append(finalTotal).append("}");
+            // CA is online - deduct stock from CA's database directly
+            System.out.println("[OrderService] CA is online - deducting stock from CA database");
             
-            boolean forwarded = caService.forwardOrderToCA(orderJson.toString());
-            if (!forwarded) {
-                System.out.println("[OrderService] Failed to forward to CA, deducting from PU cache");
-                // Fallback: deduct from PU cache
-                for (OrderItem item : items) {
-                    orderRepository.deductStock(item.getProductId(), item.getQuantity());
+            for (OrderItem item : items) {
+                // Get item_id from product_id
+                String itemId = caService.getItemIdFromProductId(item.getProductId());
+                if (itemId != null) {
+                    boolean deducted = caService.deductStockFromCA(itemId, item.getQuantity());
+                    if (!deducted) {
+                        System.err.println("[OrderService] Failed to deduct from CA for " + itemId);
+                        // Continue anyway - order is already created
+                    }
+                } else {
+                    System.err.println("[OrderService] Could not find item_id for product " + item.getProductId());
                 }
             }
         } else {
             // CA is offline - deduct from PU cache
             System.out.println("[OrderService] CA is offline - deducting stock from PU cache");
             for (OrderItem item : items) {
-                orderRepository.deductStock(item.getProductId(), item.getQuantity());
+                caService.deductStockFromPUCache(item.getProductId(), item.getQuantity());
             }
         }
 

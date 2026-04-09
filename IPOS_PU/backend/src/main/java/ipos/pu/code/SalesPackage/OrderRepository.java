@@ -60,7 +60,8 @@ public class OrderRepository {
     }
 
     public void deductStock(int productId, int quantity) {
-        String sql = "UPDATE product_cache SET stock_quantity = stock_quantity - ?, pending_stock_change = pending_stock_change - ? WHERE product_id = ?";
+        // When CA is offline: deduct from stock AND add to pending_stock_change (to sync later)
+        String sql = "UPDATE product_cache SET stock_quantity = stock_quantity - ?, pending_stock_change = pending_stock_change + ? WHERE product_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement pst = conn.prepareStatement(sql)) {
             pst.setInt(1, quantity);
@@ -70,6 +71,21 @@ public class OrderRepository {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public String getItemIdByProductId(int productId) {
+        String sql = "SELECT item_id FROM product_cache WHERE product_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setInt(1, productId);
+            ResultSet rs = pst.executeQuery();
+            if (rs.next()) {
+                return rs.getString("item_id");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void incrementOrderNumber(String email) {

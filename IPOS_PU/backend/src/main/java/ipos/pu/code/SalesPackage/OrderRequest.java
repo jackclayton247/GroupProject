@@ -31,5 +31,9 @@ public class OrderRequest {
 
     public List<OrderItem> getItems() { return items; }
     public void setItems(List<OrderItem> items) { this.items = items; }
-    
+
+    @Override
+    public String toString() {
+        return "OrderRequest{userEmail='" + userEmail + "', deliveryAddress='" + deliveryAddress + "', cardType='" + cardType + "', items=" + (items != null ? items.size() : 0) + " items}";
+    }
 }
