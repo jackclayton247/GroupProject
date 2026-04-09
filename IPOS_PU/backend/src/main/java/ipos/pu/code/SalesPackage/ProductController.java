@@ -15,7 +15,7 @@ public class ProductController {
 
     @GetMapping
     public List<ProductCache> getProducts(@RequestParam(required = false) String category) {
-        if (category != null && !category.isEmpty()) {
+        if (category != null && !category.isEmpty() && !category.equalsIgnoreCase("all")) {
             return productRepository.findByItemIdStartingWithAndIsActive(category, 1);
         }
         return productRepository.findByIsActive(1);

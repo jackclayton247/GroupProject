@@ -1,69 +1,106 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './PurchaseHistoryPage.css';
-
-const mockOrders = [
-  {
-    orderId: 'PU-10045',
-    date: '2026-04-05',
-    status: 'Delivered',
-    total: 18.75,
-    items: [
-      { description: 'Paracetamol', qty: 2, unitPrice: 0.10 },
-      { description: 'Vitamin C', qty: 5, unitPrice: 1.20 },
-      { description: 'Aspirin', qty: 10, unitPrice: 0.50 },
-    ],
-  },
-  {
-    orderId: 'PU-10038',
-    date: '2026-03-28',
-    status: 'Dispatched',
-    total: 32.50,
-    items: [
-      { description: 'Rhynol', qty: 3, unitPrice: 2.50 },
-      { description: 'Vitamin B12', qty: 10, unitPrice: 1.30 },
-      { description: 'Iodine tincture', qty: 8, unitPrice: 0.30 },
-    ],
-  },
-  {
-    orderId: 'PU-10021',
-    date: '2026-03-10',
-    status: 'Delivered',
-    total: 55.00,
-    items: [
-      { description: 'Celebrex, caps 100 mg', qty: 3, unitPrice: 10.00 },
-      { description: 'Claritin CR, 60g', qty: 1, unitPrice: 19.50 },
-      { description: 'Analgin', qty: 2, unitPrice: 1.20 },
-      { description: 'Aspirin', qty: 3, unitPrice: 0.50 },
-    ],
-  },
-  {
-    orderId: 'PU-10009',
-    date: '2026-02-18',
-    status: 'Delivered',
-    total: 12.30,
-    items: [
-      { description: 'Paracetamol', qty: 5, unitPrice: 0.10 },
-      { description: 'Vitamin C', qty: 8, unitPrice: 1.20 },
-    ],
-  },
-];
+import { useAuth } from '../context/AuthContext';
 
 const statusColors = {
   Delivered: 'status-delivered',
   Dispatched: 'status-dispatched',
   Processing: 'status-processing',
   Pending: 'status-pending',
+  received: 'status-pending',
 };
 
 function PurchaseHistoryPage() {
+  const { isLoggedIn, userEmail } = useAuth();
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [filterStatus, setFilterStatus] = useState('All');
 
   const statuses = ['All', 'Pending', 'Processing', 'Dispatched', 'Delivered'];
 
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchOrders = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/orders/my-orders', {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        if (data.error) {
+          setError(data.message);
+        } else {
+          setOrders(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        setError('Failed to load orders');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="purchase-history-page">
+        <div className="ph-header">
+          <div className="ph-header-content">
+            <h1>Purchase History</h1>
+          </div>
+        </div>
+        <div className="ph-container">
+          <div className="ph-empty">
+            <p>Please <a href="/login">log in</a> to view your purchase history.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="purchase-history-page">
+        <div className="ph-header">
+          <div className="ph-header-content">
+            <h1>Purchase History</h1>
+          </div>
+        </div>
+        <div className="ph-container">
+          <div className="ph-empty">
+            <p>Loading your orders...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="purchase-history-page">
+        <div className="ph-header">
+          <div className="ph-header-content">
+            <h1>Purchase History</h1>
+          </div>
+        </div>
+        <div className="ph-container">
+          <div className="ph-empty">
+            <p>Error: {error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const filtered = filterStatus === 'All'
-    ? mockOrders
-    : mockOrders.filter(o => o.status === filterStatus);
+    ? orders
+    : orders.filter(o => o.status === filterStatus || (filterStatus === 'Pending' && o.status === 'received'));
 
   return (
     <div className="purchase-history-page">

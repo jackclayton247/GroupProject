@@ -19,9 +19,6 @@ CREATE TABLE IF NOT EXISTS `user` (
     merchant BOOLEAN NOT NULL DEFAULT FALSE
 );
 
--- Add merchant column to existing tables that were created without it
-ALTER TABLE `user` ADD COLUMN IF NOT EXISTS merchant BOOLEAN NOT NULL DEFAULT FALSE;
-
 CREATE TABLE IF NOT EXISTS promotion (
     name VARCHAR(255) PRIMARY KEY,
     start DATETIME,
@@ -43,7 +40,8 @@ CREATE TABLE IF NOT EXISTS orders (
     status VARCHAR(50) DEFAULT 'received',
     total_price DECIMAL(10,2),
     delivery_address TEXT,
-    discount_applied DECIMAL(10,2) DEFAULT 0.00
+    discount_applied DECIMAL(10,2) DEFAULT 0.00,
+    FOREIGN KEY (user_email) REFERENCES `user`(email) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS order_items (

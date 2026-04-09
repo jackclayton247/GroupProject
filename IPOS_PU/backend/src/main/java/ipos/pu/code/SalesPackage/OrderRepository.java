@@ -210,4 +210,64 @@ public class OrderRepository {
             return 1;
         }
     }
+
+    public String getOrdersByEmail(String email) {
+        String sql = "SELECT o.order_id, o.user_email, o.delivery_address, o.order_date, o.total_price, o.status, o.discount_applied, " +
+                     "oi.product_id, oi.quantity, oi.unit_price, COALESCE(pc.description, CONCAT('Product #', oi.product_id)) as product_name " +
+                     "FROM orders o " +
+                     "JOIN order_items oi ON o.order_id = oi.order_id " +
+                     "LEFT JOIN product_cache pc ON oi.product_id = pc.product_id " +
+                     "WHERE o.user_email = ? " +
+                     "ORDER BY o.order_date DESC";
+        
+        java.util.LinkedHashMap<Integer, StringBuilder> orderMap = new java.util.LinkedHashMap<>();
+        java.util.Map<Integer, StringBuilder> itemsMap = new java.util.HashMap<>();
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setString(1, email);
+            ResultSet rs = pst.executeQuery();
+            
+            while (rs.next()) {
+                int orderId = rs.getInt("order_id");
+                
+                if (!orderMap.containsKey(orderId)) {
+                    StringBuilder orderJson = new StringBuilder();
+                    orderJson.append("{")
+                        .append("\"orderId\":\"PU-").append(orderId).append("\",")
+                        .append("\"date\":\"").append(rs.getString("order_date")).append("\",")
+                        .append("\"status\":\"").append(rs.getString("status")).append("\",")
+                        .append("\"total\":").append(rs.getDouble("total_price")).append(",")
+                        .append("\"discount\":").append(rs.getDouble("discount_applied"))
+                        .append("}");
+                    orderMap.put(orderId, orderJson);
+                    itemsMap.put(orderId, new StringBuilder());
+                }
+                
+                StringBuilder items = itemsMap.get(orderId);
+                if (items.length() > 0) items.append(",");
+                items.append("{")
+                    .append("\"description\":\"").append(rs.getString("product_name")).append("\",")
+                    .append("\"qty\":").append(rs.getInt("quantity")).append(",")
+                    .append("\"unitPrice\":").append(rs.getDouble("unit_price"))
+                    .append("}");
+            }
+            
+            StringBuilder result = new StringBuilder("[");
+            boolean first = true;
+            for (Integer orderId : orderMap.keySet()) {
+                if (!first) result.append(",");
+                // Parse the order JSON to insert items
+                String orderStr = orderMap.get(orderId).toString();
+                result.append(orderStr, 0, orderStr.length() - 1); // Remove closing }
+                result.append(",\"items\":[").append(itemsMap.get(orderId)).append("]}");
+                first = false;
+            }
+            result.append("]");
+            return result.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "[]";
+        }
+    }
 }
