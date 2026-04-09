@@ -5,7 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import ipos.pu.code.config.DatabaseConfig;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class UserRepository {
 
     public int addUser(String email, String password) {
@@ -76,5 +78,17 @@ public class UserRepository {
             e.printStackTrace();
         }
         return false;
+    }
+    public String makeMerchant(String email){
+        String sql = "UPDATE user SET merchant = true WHERE email = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, email);
+            stmt.executeUpdate();
+            return "Success";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Error: " + e.getMessage();
+        }
     }
 }
