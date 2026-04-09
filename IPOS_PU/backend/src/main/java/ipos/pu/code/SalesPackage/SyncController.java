@@ -79,6 +79,7 @@ public class SyncController {
      */
     @PostMapping("/update-cache")
     public String updateCache(@RequestBody String productsJson) {
+        System.out.println("[SyncController] Received update-cache request, JSON length: " + productsJson.length());
         try {
             org.json.JSONArray arr = new org.json.JSONArray(productsJson);
             int updated = 0;
@@ -101,6 +102,7 @@ public class SyncController {
                     for (int i = 0; i < arr.length(); i++) {
                         org.json.JSONObject p = arr.getJSONObject(i);
                         String itemId = p.getString("itemId");
+                        int stockQty = p.getInt("stockQuantity");
                         
                         // Try UPDATE first
                         updateStmt.setString(1, p.getString("description"));
@@ -108,13 +110,14 @@ public class SyncController {
                         updateStmt.setInt(3, p.optInt("unitsInPack", 1));
                         updateStmt.setDouble(4, p.getDouble("price"));
                         updateStmt.setDouble(5, p.optDouble("vatRate", 0.0));
-                        updateStmt.setInt(6, p.getInt("stockQuantity"));
+                        updateStmt.setInt(6, stockQty);
                         updateStmt.setInt(7, p.optInt("minStockLevel", 0));
                         updateStmt.setInt(8, p.optInt("isActive", 1));
                         updateStmt.setString(9, itemId);
                         
                         int rows = updateStmt.executeUpdate();
                         if (rows > 0) {
+                            System.out.println("[SyncController] Updated product " + itemId + " with stock: " + stockQty);
                             updated++;
                         } else {
                             // Product doesn't exist, INSERT it
@@ -124,17 +127,21 @@ public class SyncController {
                             insertStmt.setInt(4, p.optInt("unitsInPack", 1));
                             insertStmt.setDouble(5, p.getDouble("price"));
                             insertStmt.setDouble(6, p.optDouble("vatRate", 0.0));
-                            insertStmt.setInt(7, p.getInt("stockQuantity"));
+                            insertStmt.setInt(7, stockQty);
                             insertStmt.setInt(8, p.optInt("minStockLevel", 0));
                             insertStmt.setInt(9, p.optInt("isActive", 1));
                             insertStmt.executeUpdate();
+                            System.out.println("[SyncController] Inserted new product " + itemId + " with stock: " + stockQty);
                             inserted++;
                         }
                     }
                 }
             }
-            return "cache updated: " + updated + " updated, " + inserted + " inserted";
+            String result = "cache updated: " + updated + " updated, " + inserted + " inserted";
+            System.out.println("[SyncController] " + result);
+            return result;
         } catch (Exception e) {
+            System.err.println("[SyncController] Error in updateCache: " + e.getMessage());
             e.printStackTrace();
             return "error: " + e.getMessage();
         }
@@ -175,14 +182,5 @@ public class SyncController {
             e.printStackTrace();
             return "[]";
         }
-    }
-
-    /**
-     * Health check endpoint for CA to ping.
-     * Returns "pong" if PU is online.
-     */
-    @GetMapping("/ping")
-    public String ping() {
-        return "pong";
     }
 }

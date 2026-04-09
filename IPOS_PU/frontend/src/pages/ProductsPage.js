@@ -3,6 +3,7 @@ import { useCart } from '../context/CartContext';
 import './ProductsPage.css';
 
 const categories = [
+  { id: "all", name: "All Products" },
   { id: "100", name: "Category 1" },
   { id: "200", name: "Category 2" },
   { id: "300", name: "Category 3" },
@@ -10,23 +11,39 @@ const categories = [
 ];
 
 function ProductsPage() {
-    const [selectedCategory, setSelectedCategory] = useState("100");
+    const [selectedCategory, setSelectedCategory] = useState("all");
     const [search, setSearch] = useState("");
     const [products, setProducts] = useState([]);
+    const [lastUpdated, setLastUpdated] = useState(null);
     const { addToCart } = useCart();
 
+    const fetchProducts = () => {
+        const url = selectedCategory === "all" 
+            ? "http://localhost:8080/api/products"
+            : `http://localhost:8080/api/products?category=${selectedCategory}`;
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                console.log("Products fetched:", data);
+                setProducts(Array.isArray(data) ? data : []);
+                setLastUpdated(new Date().toLocaleTimeString());
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                setProducts([]);
+            });
+    };
+
+    // Fetch on category change
     useEffect(() => {
-    fetch(`http://localhost:8080/api/products?category=${selectedCategory}`)
-        .then(res => res.json())
-        .then(data => {
-            console.log(data);
-            setProducts(Array.isArray(data) ? data : []);
-        })
-        .catch(err => {
-            console.error("Fetch error:", err);
-            setProducts([]);
-        });
-}, [selectedCategory]);
+        fetchProducts();
+    }, [selectedCategory]);
+
+    // Auto-refresh every 10 seconds to catch CA stock updates
+    useEffect(() => {
+        const interval = setInterval(fetchProducts, 10000);
+        return () => clearInterval(interval);
+    }, [selectedCategory]);
 
     const filtered = products.filter(p =>
         p.description.toLowerCase().includes(search.toLowerCase())
@@ -50,39 +67,36 @@ function ProductsPage() {
         
         <div className="products-main">
             <div className="products-main-header">
-            <h2 className="products-main-title">{categories.find(c => c.id === selectedCategory)?.name}</h2>
-            <div className="products-search-wrapper">
-            <input
-            type="text"
-            className="products-search"
-            placeholder="Search products"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            />
-           <button className="products-search-btn">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8"/>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-            </button>
+                <h2 className="products-main-title">{categories.find(c => c.id === selectedCategory)?.name}</h2>
+                <div className="products-header-right">
+                    {lastUpdated && <span className="last-updated">Updated: {lastUpdated}</span>}
+                    <button className="refresh-btn" onClick={fetchProducts}>Refresh</button>
+                    <div className="products-search-wrapper">
+                        <input
+                            type="text"
+                            className="products-search"
+                            placeholder="Search products"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
+                </div>
             </div>
-            </div>
-
             <div className="products-grid">
-                {filtered.map(p => (
-                    <div key={p.itemId} className="product-card">
-                        <h3>{p.description}</h3>
-                        <p className="product-id">ID: {p.itemId}</p>
-                        <p className="product-detail">Package: {p.packageType} ({p.unitsInPack} units/pack)</p>
-                        <p className="product-price">£{p.price.toFixed(2)} per pack</p>
-                        <p className="product-stock">✓ {p.stockQuantity} packs in stock</p>
-                        <button onClick={() => addToCart(p.productId, p.description, p.price)}>Add to Cart</button>
-                        </div>
-                ))}
+            {filtered.map(product => (
+            <div key={product.productId} className="product-card">
+                <div className="product-info">
+                <h4 className="product-title">{product.description}</h4>
+                <p className="product-price">${product.price?.toFixed(2)}</p>
+                <p className="product-stock">Stock: {product.stockQuantity}</p>
+                <button className="product-add-btn" onClick={() => addToCart(product)}>Add to Cart</button>
+                </div>
+            </div>
+            ))}
             </div>
         </div>
     </div>
-  );
+    );
 }
 
 export default ProductsPage;
