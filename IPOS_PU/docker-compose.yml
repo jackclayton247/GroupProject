@@ -30,6 +30,7 @@ services:
       - "8080:8080"
     environment:
       - CA_BASE_URL=http://host.docker.internal:8082
+      - SA_BASE_URL=http://host.docker.internal:8081
     networks:
       - app-network
     extra_hosts:

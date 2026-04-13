@@ -87,7 +87,7 @@ function ProductsPage() {
             <div key={product.productId} className="product-card">
                 <div className="product-info">
                 <h4 className="product-title">{product.description}</h4>
-                <p className="product-price">${product.price?.toFixed(2)}</p>
+                <p className="product-price">&pound;{product.price?.toFixed(2)}</p>
                 <p className="product-stock">Stock: {product.stockQuantity}</p>
                 <button className="product-add-btn" onClick={() => addToCart(product)}>Add to Cart</button>
                 </div>

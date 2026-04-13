@@ -8,7 +8,7 @@ import ipos.pu.code.MembersPackage.service.MerchantService;
 
 @RestController
 @RequestMapping("/merchant")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@CrossOrigin(origins = "*", allowCredentials = "false")
 public class MerchantController {
 
     private final MerchantService merchantService;
@@ -18,18 +18,51 @@ public class MerchantController {
         this.merchantService = merchantService;
     }
 
+    /**
+     * Submit a commercial membership application.
+     * Called by PU frontend or directly via curl.
+     * Accepts email as query param (simple) or full details in body.
+     */
     @PostMapping("/application")
-    public String application(@RequestParam String email) {
-        return merchantService.merchantRequest(email);
+    public String application(@RequestParam String email,
+                               @RequestBody(required = false) Map<String, String> details) {
+        if (details == null) {
+            details = Map.of();
+        }
+        return merchantService.submitApplication(email, details);
     }
+
+    /**
+     * Called by SA to approve a commercial membership application.
+     * SA sends the email of the approved user.
+     */
     @PostMapping("/response")
     public String response(@RequestBody Map<String, String> request) {
-    String email = request.get("email");
-
-    if (email == null || email.isEmpty()) {
-        return "error: missing email";
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return "error: missing email";
+        }
+        return merchantService.response(email);
     }
 
-    return merchantService.response(email);
-}
+    /**
+     * Called by SA to reject a commercial membership application.
+     */
+    @PostMapping("/reject")
+    public String reject(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        if (email == null || email.isEmpty()) {
+            return "error: missing email";
+        }
+        return merchantService.reject(email);
+    }
+
+    /**
+     * Get all pending merchant applications.
+     * Used by admin/SA.
+     */
+    @GetMapping("/applications")
+    public String getPendingApplications() {
+        return merchantService.getPendingApplications();
+    }
 }

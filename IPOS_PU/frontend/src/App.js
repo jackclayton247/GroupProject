@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import LoginPage from './pages/LoginPage';
 import ProductsPage from './pages/ProductsPage';
@@ -8,18 +9,26 @@ import MerchantDashboard from './pages/MerchantDashboard';
 import CartPage from './pages/CartPage';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { useCart } from './context/CartContext';
 import './App.css';
 
-const bestSellers = [
-  { id: 1, name: 'Nurofen', price: 1.89, image: null },
-  { id: 2, name: 'Cough Syrup', price: 2.49, image: null },
-  { id: 3, name: 'Ozempic', price: 3.15, image: null },
-  { id: 4, name: 'Purple Lean', price: 4.50, image: null },
-  { id: 5, name: 'Xanax', price: 1.99, image: null },
-  { id: 6, name: 'Percs', price: 4.25, image: null },
-];
+const API = 'http://localhost:8080';
 
 function Home() {
+  const [bestSellers, setBestSellers] = useState([]);
+  const { addToCart } = useCart();
+
+  useEffect(() => {
+    fetch(`${API}/api/products`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          setBestSellers(data.slice(0, 6));
+        }
+      })
+      .catch(err => console.error('Failed to fetch products:', err));
+  }, []);
+
   return (
     <div className="home-page">
       <div className="home-container">
@@ -28,10 +37,10 @@ function Home() {
           <h2 className="section-title">Best Sellers</h2>
           <div className="best-sellers-grid">
             {bestSellers.map((item) => (
-              <div className="best-seller-card" key={item.id}>
-<h3 className="best-seller-name">{item.name}</h3>
-                <p className="best-seller-price">&pound;{item.price.toFixed(2)}</p>
-                <button className="add-to-cart-btn">Add to Cart</button>
+              <div className="best-seller-card" key={item.productId}>
+                <h3 className="best-seller-name">{item.description}</h3>
+                <p className="best-seller-price">&pound;{(item.price || 0).toFixed(2)}</p>
+                <button className="add-to-cart-btn" onClick={() => addToCart(item)}>Add to Cart</button>
               </div>
             ))}
           </div>
@@ -44,7 +53,7 @@ function Home() {
             <div className="promo-badge">SALE</div>
             <h2>Spring Sale</h2>
             <p>Up to <strong>30% OFF</strong> on selected items</p>
-            <Link to="/products" className="promo-cta">Shop Now</Link>
+            <Link to="/promotions" className="promo-cta">View Promotions</Link>
           </div>
         </aside>
       </div>
