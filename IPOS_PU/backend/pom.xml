@@ -45,6 +45,12 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
+        <dependency>
+        <groupId>com.stripe</groupId>
+        <artifactId>stripe-java</artifactId>
+        <version>24.0.0</version>
+        </dependency>
+
         <!-- Optional: For database support -->
         <!--
         <dependency>

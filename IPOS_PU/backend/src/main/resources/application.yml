@@ -37,3 +37,6 @@ spring:
           auth: true
           starttls:
             enable: true
+
+stripe:
+  secret-key:
