@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS product_cache (
-    product_id INT PRIMARY KEY,
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
     item_id VARCHAR(255) NOT NULL UNIQUE,
     description VARCHAR(255) NOT NULL,
     package_type VARCHAR(255),

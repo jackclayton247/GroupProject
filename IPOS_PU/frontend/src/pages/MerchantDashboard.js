@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './MerchantDashboard.css';
+import { useAuth } from '../context/AuthContext';
 
 const API = 'http://localhost:8080';
 
@@ -116,7 +117,7 @@ function PromotionsTab() {
         }),
       });
       const createResult = await createRes.text();
-      if (createResult !== 'Success') {
+      if (!createRes.ok || !createResult.includes('Success')) {
         alert('Failed to create campaign: ' + createResult);
         return;
       }
@@ -404,7 +405,7 @@ function ReportsTab() {
 // ── Main Dashboard ─────────────────────────────────────────────────────────────
 function MerchantDashboard() {
   const [activeTab, setActiveTab] = useState('promotions');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { isLoggedIn, isMerchant, login, logout } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
 
@@ -421,7 +422,7 @@ function MerchantDashboard() {
       });
       const data = await res.json();
       if (data.success && data.merchant) {
-        setIsLoggedIn(true);
+        login(credentials.email, true);
       } else if (data.success && !data.merchant) {
         setLoginError('This account does not have merchant access.');
       } else {
@@ -432,7 +433,7 @@ function MerchantDashboard() {
     }
   };
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn || !isMerchant) {
     return (
       <div className="merchant-login-page">
         <div className="merchant-login-card">
@@ -491,7 +492,7 @@ function MerchantDashboard() {
             Reports
           </button>
         </nav>
-        <button className="md-logout" onClick={() => setIsLoggedIn(false)}>
+        <button className="md-logout" onClick={() => logout()}>
           Sign Out
         </button>
       </aside>

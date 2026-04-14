@@ -79,11 +79,14 @@ public class OrderController {
      * Requires session with logged in user.
      */
     @GetMapping("/my-orders")
-    public String getMyOrders(HttpSession session) {
-        String email = (String) session.getAttribute("userEmail");
-        if (email == null || email.isEmpty()) {
+    public String getMyOrders(@RequestParam(required = false) String email, HttpSession session) {
+        String userEmail = email;
+        if (userEmail == null || userEmail.isEmpty()) {
+            userEmail = (String) session.getAttribute("userEmail");
+        }
+        if (userEmail == null || userEmail.isEmpty()) {
             return "{\"error\":\"not_logged_in\",\"message\":\"Please log in to view your orders\"}";
         }
-        return orderRepository.getOrdersByEmail(email);
+        return orderRepository.getOrdersByEmail(userEmail);
     }
 }
