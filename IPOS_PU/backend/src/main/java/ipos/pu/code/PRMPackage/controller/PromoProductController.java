@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RestController;
 
 import ipos.pu.code.PRMPackage.dto.PromoProductRequest;
@@ -15,6 +16,7 @@ import ipos.pu.code.model.PromotionProduct;
 
 @RestController
 @RequestMapping("/promo-product")
+@CrossOrigin(origins = "*")
 public class PromoProductController {
     private final PromoProductService promoProductService = new PromoProductService();
 

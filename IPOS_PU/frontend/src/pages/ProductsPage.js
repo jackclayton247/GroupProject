@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './ProductsPage.css';
 
@@ -11,8 +12,9 @@ const categories = [
 ];
 
 function ProductsPage() {
+    const [searchParams] = useSearchParams();
     const [selectedCategory, setSelectedCategory] = useState("all");
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(searchParams.get('search') || "");
     const [products, setProducts] = useState([]);
     const [lastUpdated, setLastUpdated] = useState(null);
     const { addToCart } = useCart();
@@ -33,6 +35,12 @@ function ProductsPage() {
                 setProducts([]);
             });
     };
+
+    // Update search from URL query param
+    useEffect(() => {
+        const q = searchParams.get('search');
+        if (q) setSearch(q);
+    }, [searchParams]);
 
     // Fetch on category change
     useEffect(() => {
