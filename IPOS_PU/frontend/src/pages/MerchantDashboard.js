@@ -3,7 +3,6 @@ import './MerchantDashboard.css';
 import { useAuth } from '../context/AuthContext';
 
 const API = 'http://localhost:8080';
-const CA_API = 'http://localhost:8081';
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -447,21 +446,28 @@ function MerchantDashboard() {
     setSignUpLoading(true);
 
     try {
-      const res = await fetch(`${CA_API}/api/membership/request`, {
+      const res = await fetch(`${API}/merchant/application?email=${encodeURIComponent(signUpData.email)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(signUpData),
+        body: JSON.stringify({
+          companyName: signUpData.companyName,
+          companyRegNumber: signUpData.registrationNumber,
+          directorName: signUpData.directors,
+          businessType: signUpData.businessType,
+          address: signUpData.address,
+          phone: signUpData.fax,
+        }),
       });
 
-      if (res.ok) {
+      const text = await res.text();
+      if (text.startsWith('error:')) {
+        setSignUpMsg({ text: text.replace('error: ', ''), isError: true });
+      } else {
         setSignUpMsg({ text: 'Membership request submitted successfully! You will be contacted once approved.', isError: false });
         setSignUpData({
           companyName: '', registrationNumber: '', directors: '',
           businessType: '', address: '', email: '', fax: '', preferPhysicalMail: false,
         });
-      } else {
-        const data = await res.json().catch(() => null);
-        setSignUpMsg({ text: data?.message || 'Failed to submit request. Please try again.', isError: true });
       }
     } catch {
       setSignUpMsg({ text: 'Could not connect to server.', isError: true });

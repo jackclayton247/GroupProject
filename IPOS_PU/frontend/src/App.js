@@ -7,6 +7,7 @@ import PromotionsPage from './pages/PromotionsPage';
 import PurchaseHistoryPage from './pages/PurchaseHistoryPage';
 import MerchantDashboard from './pages/MerchantDashboard';
 import CartPage from './pages/CartPage';
+import TrackOrderPage from './pages/TrackOrderPage';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { useCart } from './context/CartContext';
@@ -112,6 +113,8 @@ function App() {
                 <Route path="/products" element={<ProductsPage />} />
                 <Route path="/promotions" element={<PromotionsPage />} />
                 <Route path="/purchase-history" element={<PurchaseHistoryPage />} />
+                <Route path="/track-order" element={<TrackOrderPage />} />
+                <Route path="/track-order/:orderId" element={<TrackOrderPage />} />
                 <Route path="/merchant" element={<MerchantDashboard />} />
                 <Route path="/cart" element={<CartPage />} />
               </Routes>
