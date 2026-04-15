@@ -498,6 +498,75 @@ function ReportsTab() {
   const [salesData, setSalesData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const downloadPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // Title
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('IPOS-PU Sales Report', pageWidth / 2, 20, { align: 'center' });
+
+    // Period
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      `Period: ${new Date(period.from).toLocaleDateString('en-GB')} \u2013 ${new Date(period.to).toLocaleDateString('en-GB')}`,
+      pageWidth / 2, 28, { align: 'center' }
+    );
+    doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, pageWidth / 2, 34, { align: 'center' });
+
+    // Summary boxes
+    const summaryY = 44;
+    const boxW = 55;
+    const gap = 10;
+    const startX = (pageWidth - (3 * boxW + 2 * gap)) / 2;
+    const summaryItems = [
+      { label: 'Total Revenue', value: `\u00A3${totalRevenue.toFixed(2)}` },
+      { label: 'Units Sold', value: String(totalQty) },
+      { label: 'Products', value: String(items.length) },
+    ];
+    summaryItems.forEach((s, i) => {
+      const x = startX + i * (boxW + gap);
+      doc.setDrawColor(0, 48, 135);
+      doc.setFillColor(245, 247, 250);
+      doc.roundedRect(x, summaryY, boxW, 22, 2, 2, 'FD');
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(120, 120, 120);
+      doc.text(s.label.toUpperCase(), x + boxW / 2, summaryY + 8, { align: 'center' });
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(0, 48, 135);
+      doc.text(s.value, x + boxW / 2, summaryY + 18, { align: 'center' });
+    });
+    doc.setTextColor(0, 0, 0);
+
+    // Table
+    doc.autoTable({
+      startY: summaryY + 30,
+      head: [['Item ID', 'Description', 'Unit Price', 'Qty Sold', 'Revenue']],
+      body: items.map(row => [
+        row.itemId,
+        row.description,
+        `\u00A3${row.unitPrice.toFixed(2)}`,
+        row.soldPacks,
+        `\u00A3${row.total.toFixed(2)}`,
+      ]),
+      foot: items.length > 0 ? [['', '', 'Totals', totalQty, `\u00A3${totalRevenue.toFixed(2)}`]] : [],
+      headStyles: { fillColor: [0, 48, 135], fontSize: 9, fontStyle: 'bold' },
+      footStyles: { fillColor: [245, 247, 250], textColor: [0, 48, 135], fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9 },
+      alternateRowStyles: { fillColor: [250, 251, 255] },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`IPOS-PU_Sales_Report_${period.from}_to_${period.to}.pdf`);
+  };
+
   const fetchReport = async () => {
     setLoading(true);
     try {
@@ -529,6 +598,11 @@ function ReportsTab() {
           <button className="btn-secondary" onClick={fetchReport} disabled={loading}>
             {loading ? 'Loading...' : 'Generate'}
           </button>
+          {salesData && items.length > 0 && (
+            <button className="btn-primary" onClick={downloadPDF}>
+              Download PDF
+            </button>
+          )}
         </div>
       </div>
 
