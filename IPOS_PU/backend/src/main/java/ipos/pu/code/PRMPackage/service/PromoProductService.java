@@ -29,6 +29,13 @@ public class PromoProductService {
             return "unknown error";
         }
     }
+    public String updateDiscount(int productId, float discount, String promotionName) {
+        int response = promoProductRepository.updateDiscount(productId, discount, promotionName);
+        if (response == 0) return "success";
+        else if (response == 1) return "product not found in promotion";
+        else return "unknown error";
+    }
+
     public List<PromotionProduct> getAll(String name) {
         return promoProductRepository.getAll(name);
     }

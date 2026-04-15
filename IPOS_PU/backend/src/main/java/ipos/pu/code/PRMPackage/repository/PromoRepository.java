@@ -52,6 +52,21 @@ public class PromoRepository {
             return 2; //unknown error
         }
     }
+    public int updatePromotion(String name, LocalDate start, LocalDate end) {
+        String sql = "UPDATE promotion SET start = ?, end = ? WHERE name = ?";
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setDate(1, Date.valueOf(start));
+            stmt.setDate(2, Date.valueOf(end));
+            stmt.setString(3, name);
+            int rows = stmt.executeUpdate();
+            if (rows == 0) return 1; // not found
+            return 0; // success
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 2; // error
+        }
+    }
+
     public List<PromotionProduct> getAll() {
         String sql = "SELECT * FROM promotion_product";
         List<PromotionProduct> list = new ArrayList<>();

@@ -29,6 +29,19 @@ public class PromoController {
         return promoService.createPromotion(name, start, end);
     }
 
+    @PutMapping("/update")
+    public String update(@RequestBody PromoRequest request) {
+        String name = request.getName();
+        LocalDate start = request.getStart();
+        LocalDate end = request.getEnd();
+
+        if (name == null || start == null || end == null) {
+            return "parameter error";
+        }
+
+        return promoService.updatePromotion(name, start, end);
+    }
+
     @PostMapping("/cancel")
     public String cancel(@RequestParam String name) {
         if (name == null) {

@@ -11,6 +11,13 @@ function PromotionsTab() {
   const [showForm, setShowForm] = useState(false);
   const [expandedCamp, setExpandedCamp] = useState(null);
   const [availableProducts, setAvailableProducts] = useState([]);
+  const [editingCamp, setEditingCamp] = useState(null); // campaign name being edited
+  const [editData, setEditData] = useState({
+    startDate: '',
+    endDate: '',
+    selectedItems: {},   // { productId: discount }
+    originalItems: {},   // to track what was there before
+  });
   const [newCamp, setNewCamp] = useState({
     name: '',
     startDate: '',
@@ -80,6 +87,107 @@ function PromotionsTab() {
       setCampaigns(prev => prev.filter(c => c.name !== name));
     } catch (err) {
       console.error('Failed to cancel campaign:', err);
+    }
+  };
+
+  const handleStartEdit = (camp) => {
+    const items = {};
+    camp.items.forEach(item => {
+      items[item.productId] = item.discount;
+    });
+    setEditingCamp(camp.name);
+    setEditData({
+      startDate: camp.startDate,
+      endDate: camp.endDate,
+      selectedItems: { ...items },
+      originalItems: { ...items },
+    });
+    setShowForm(false);
+  };
+
+  const handleEditItemToggle = (productId) => {
+    setEditData(prev => {
+      const updated = { ...prev.selectedItems };
+      if (updated[productId] !== undefined) {
+        delete updated[productId];
+      } else {
+        updated[productId] = 10;
+      }
+      return { ...prev, selectedItems: updated };
+    });
+  };
+
+  const handleEditDiscountChange = (productId, val) => {
+    setEditData(prev => ({
+      ...prev,
+      selectedItems: { ...prev.selectedItems, [productId]: Number(val) },
+    }));
+  };
+
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    try {
+      // Update dates
+      const dateRes = await fetch(`${API}/promo/update`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: editingCamp,
+          start: editData.startDate,
+          end: editData.endDate,
+        }),
+      });
+      const dateResult = await dateRes.text();
+      if (!dateResult.includes('Success')) {
+        alert('Failed to update campaign dates: ' + dateResult);
+        return;
+      }
+
+      const oldIds = Object.keys(editData.originalItems).map(Number);
+      const newIds = Object.keys(editData.selectedItems).map(Number);
+
+      // Remove products that were deselected
+      for (const id of oldIds) {
+        if (!newIds.includes(id)) {
+          await fetch(`${API}/promo-product/remove?productId=${id}`, { method: 'POST' });
+        }
+      }
+
+      // Add new products
+      for (const id of newIds) {
+        if (!oldIds.includes(id)) {
+          await fetch(`${API}/promo-product/add`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId: id,
+              discount: editData.selectedItems[id],
+              promotionName: editingCamp,
+            }),
+          });
+        }
+      }
+
+      // Update discounts for existing products that changed
+      for (const id of newIds) {
+        if (oldIds.includes(id) && editData.selectedItems[id] !== editData.originalItems[id]) {
+          await fetch(`${API}/promo-product/update`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              productId: id,
+              discount: editData.selectedItems[id],
+              promotionName: editingCamp,
+            }),
+          });
+        }
+      }
+
+      setEditingCamp(null);
+      fetchCampaigns();
+    } catch (err) {
+      console.error('Failed to update campaign:', err);
+      alert('Error updating campaign');
     }
   };
 
@@ -230,6 +338,74 @@ function PromotionsTab() {
         </form>
       )}
 
+      {editingCamp && (
+        <form className="create-form edit-form" onSubmit={handleSaveEdit}>
+          <div className="edit-form-header">
+            <h3>Edit Campaign: {editingCamp}</h3>
+            <button type="button" className="btn-secondary" onClick={() => setEditingCamp(null)}>Cancel</button>
+          </div>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Start Date</label>
+              <input
+                type="date"
+                value={editData.startDate}
+                onChange={e => setEditData(prev => ({ ...prev, startDate: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label>End Date</label>
+              <input
+                type="date"
+                value={editData.endDate}
+                onChange={e => setEditData(prev => ({ ...prev, endDate: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-section">
+            <label>Products &amp; Discounts</label>
+            <div className="product-select-grid">
+              {availableProducts.map(prod => {
+                const selected = prod.productId in editData.selectedItems;
+                return (
+                  <div
+                    key={prod.productId}
+                    className={`product-select-card ${selected ? 'selected' : ''}`}
+                    onClick={() => handleEditItemToggle(prod.productId)}
+                  >
+                    <span className="ps-name">{prod.description}</span>
+                    <span className="ps-price">&pound;{(prod.price || 0).toFixed(2)}</span>
+                    {selected && (
+                      <div className="ps-discount-row" onClick={e => e.stopPropagation()}>
+                        <label>Discount %</label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="99"
+                          value={editData.selectedItems[prod.productId]}
+                          onChange={e => handleEditDiscountChange(prod.productId, e.target.value)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="btn-primary"
+            disabled={!editData.startDate || !editData.endDate || Object.keys(editData.selectedItems).length === 0}
+          >
+            Save Changes
+          </button>
+        </form>
+      )}
+
       <div className="campaigns-table-wrap">
         <table className="data-table">
           <thead>
@@ -259,12 +435,20 @@ function PromotionsTab() {
                   <td>{camp.clicks}</td>
                   <td>
                     {camp.status === 'Active' && (
-                      <button
-                        className="btn-danger-sm"
-                        onClick={e => { e.stopPropagation(); handleCancel(camp.name); }}
-                      >
-                        Cancel
-                      </button>
+                      <>
+                        <button
+                          className="btn-edit-sm"
+                          onClick={e => { e.stopPropagation(); handleStartEdit(camp); }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn-danger-sm"
+                          onClick={e => { e.stopPropagation(); handleCancel(camp.name); }}
+                        >
+                          Cancel
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>

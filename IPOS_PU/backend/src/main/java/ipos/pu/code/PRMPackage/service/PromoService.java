@@ -20,6 +20,13 @@ public class PromoService {
         else return "error";
     }
 
+    public String updatePromotion(String name, LocalDate start, LocalDate end) {
+        int response = promoRepository.updatePromotion(name, start, end);
+        if (response == 0) return "Success";
+        else if (response == 1) return "Promotion not found";
+        else return "error";
+    }
+
     public String cancelPromotion(String name) {
         // First delete promotion products, then delete campaign clicks, then the promotion
         try (Connection conn = DatabaseConfig.getConnection()) {

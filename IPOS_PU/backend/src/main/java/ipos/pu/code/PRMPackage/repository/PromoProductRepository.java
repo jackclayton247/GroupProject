@@ -46,6 +46,21 @@ public class PromoProductRepository {
             return 2; //unknown error
         }
     }
+    public int updateDiscount(int productId, float discount, String promotionName) {
+        String sql = "UPDATE promotion_product SET discount = ? WHERE product_id = ? AND promotion_name = ?";
+        try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setFloat(1, discount);
+            stmt.setInt(2, productId);
+            stmt.setString(3, promotionName);
+            int rows = stmt.executeUpdate();
+            if (rows == 0) return 1; // not found
+            return 0; // success
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 2; // error
+        }
+    }
+
     public List<PromotionProduct> getAll(String promotionName) {
         String sql = "SELECT * FROM promotion_product WHERE promotion_name = ?";
         List<PromotionProduct> list = new ArrayList<>();

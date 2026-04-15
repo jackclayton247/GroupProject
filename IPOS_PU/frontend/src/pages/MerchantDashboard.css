@@ -309,6 +309,39 @@
   color: #fff;
 }
 
+.btn-edit-sm {
+  background: #fff;
+  color: var(--blue-dark);
+  border: 1px solid var(--blue-dark);
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-right: 6px;
+}
+
+.btn-edit-sm:hover {
+  background: var(--blue-dark);
+  color: #fff;
+}
+
+.edit-form {
+  border-left-color: var(--blue-dark);
+}
+
+.edit-form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.edit-form-header h3 {
+  margin: 0;
+}
+
 .btn-danger-sm {
   background: #fff;
   color: #e53935;
