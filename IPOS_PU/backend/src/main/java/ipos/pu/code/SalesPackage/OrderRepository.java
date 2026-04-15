@@ -73,6 +73,19 @@ public class OrderRepository {
         }
     }
 
+    public void deductLocalStockOnly(int productId, int quantity) {
+        // When CA is online: deduct from local cache only (no pending_stock_change since CA already has the update)
+        String sql = "UPDATE product_cache SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement pst = conn.prepareStatement(sql)) {
+            pst.setInt(1, quantity);
+            pst.setInt(2, productId);
+            pst.executeUpdate();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getItemIdByProductId(int productId) {
         String sql = "SELECT item_id FROM product_cache WHERE product_id = ?";
         try (Connection conn = DatabaseConfig.getConnection();

@@ -3,6 +3,7 @@ import './MerchantDashboard.css';
 import { useAuth } from '../context/AuthContext';
 
 const API = 'http://localhost:8080';
+const CA_API = 'http://localhost:8081';
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -408,6 +409,13 @@ function MerchantDashboard() {
   const { isLoggedIn, isMerchant, login, logout } = useAuth();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
+  const [showSignUp, setShowSignUp] = useState(false);
+  const [signUpData, setSignUpData] = useState({
+    companyName: '', registrationNumber: '', directors: '',
+    businessType: '', address: '', email: '', fax: '', preferPhysicalMail: false,
+  });
+  const [signUpMsg, setSignUpMsg] = useState({ text: '', isError: false });
+  const [signUpLoading, setSignUpLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -433,39 +441,180 @@ function MerchantDashboard() {
     }
   };
 
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setSignUpMsg({ text: '', isError: false });
+    setSignUpLoading(true);
+
+    try {
+      const res = await fetch(`${CA_API}/api/membership/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(signUpData),
+      });
+
+      if (res.ok) {
+        setSignUpMsg({ text: 'Membership request submitted successfully! You will be contacted once approved.', isError: false });
+        setSignUpData({
+          companyName: '', registrationNumber: '', directors: '',
+          businessType: '', address: '', email: '', fax: '', preferPhysicalMail: false,
+        });
+      } else {
+        const data = await res.json().catch(() => null);
+        setSignUpMsg({ text: data?.message || 'Failed to submit request. Please try again.', isError: true });
+      }
+    } catch {
+      setSignUpMsg({ text: 'Could not connect to server.', isError: true });
+    } finally {
+      setSignUpLoading(false);
+    }
+  };
+
   if (!isLoggedIn || !isMerchant) {
     return (
       <div className="merchant-login-page">
-        <div className="merchant-login-card">
+        <div className={`merchant-login-card ${showSignUp ? 'signup-mode' : ''}`}>
           <div className="ml-logo">IPOS-PU</div>
           <h2>Merchant Portal</h2>
-          <p className="ml-subtitle">Sign in to manage your promotions and reports.</p>
 
-          {loginError && <p className="ml-error">{loginError}</p>}
+          {!showSignUp ? (
+            <>
+              <p className="ml-subtitle">Sign in to manage your promotions and reports.</p>
 
-          <form onSubmit={handleLogin} className="ml-form">
-            <div className="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                placeholder="merchant@pharmacy.com"
-                value={credentials.email}
-                onChange={e => setCredentials(p => ({ ...p, email: e.target.value }))}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <input
-                type="password"
-                placeholder="Enter password"
-                value={credentials.password}
-                onChange={e => setCredentials(p => ({ ...p, password: e.target.value }))}
-                required
-              />
-            </div>
-            <button type="submit" className="ml-submit-btn">Sign In</button>
-          </form>
+              {loginError && <p className="ml-error">{loginError}</p>}
+
+              <form onSubmit={handleLogin} className="ml-form">
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="merchant@pharmacy.com"
+                    value={credentials.email}
+                    onChange={e => setCredentials(p => ({ ...p, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    placeholder="Enter password"
+                    value={credentials.password}
+                    onChange={e => setCredentials(p => ({ ...p, password: e.target.value }))}
+                    required
+                  />
+                </div>
+                <button type="submit" className="ml-submit-btn">Sign In</button>
+              </form>
+
+              <p className="ml-toggle">
+                Don't have an account?{' '}
+                <button className="ml-toggle-btn" onClick={() => { setShowSignUp(true); setLoginError(''); }}>
+                  Sign Up
+                </button>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="ml-subtitle">Request merchant membership to get started.</p>
+
+              {signUpMsg.text && (
+                <p className={signUpMsg.isError ? 'ml-error' : 'ml-success'}>{signUpMsg.text}</p>
+              )}
+
+              <form onSubmit={handleSignUp} className="ml-form">
+                <div className="form-group">
+                  <label>Company Name</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Cosymed Ltd"
+                    value={signUpData.companyName}
+                    onChange={e => setSignUpData(p => ({ ...p, companyName: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Registration Number</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 12345678"
+                    value={signUpData.registrationNumber}
+                    onChange={e => setSignUpData(p => ({ ...p, registrationNumber: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Directors</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. John Smith"
+                    value={signUpData.directors}
+                    onChange={e => setSignUpData(p => ({ ...p, directors: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Business Type</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Pharmacy"
+                    value={signUpData.businessType}
+                    onChange={e => setSignUpData(p => ({ ...p, businessType: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Address</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 3 High Level Drive, London"
+                    value={signUpData.address}
+                    onChange={e => setSignUpData(p => ({ ...p, address: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="e.g. user@example.com"
+                    value={signUpData.email}
+                    onChange={e => setSignUpData(p => ({ ...p, email: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Fax</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. 0208 778 0124"
+                    value={signUpData.fax}
+                    onChange={e => setSignUpData(p => ({ ...p, fax: e.target.value }))}
+                  />
+                </div>
+                <div className="form-group form-group-checkbox">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={signUpData.preferPhysicalMail}
+                      onChange={e => setSignUpData(p => ({ ...p, preferPhysicalMail: e.target.checked }))}
+                    />
+                    Prefer physical mail
+                  </label>
+                </div>
+                <button type="submit" className="ml-submit-btn" disabled={signUpLoading}>
+                  {signUpLoading ? 'Submitting...' : 'Submit Request'}
+                </button>
+              </form>
+
+              <p className="ml-toggle">
+                Already have an account?{' '}
+                <button className="ml-toggle-btn" onClick={() => { setShowSignUp(false); setSignUpMsg({ text: '', isError: false }); }}>
+                  Sign In
+                </button>
+              </p>
+            </>
+          )}
         </div>
       </div>
     );
