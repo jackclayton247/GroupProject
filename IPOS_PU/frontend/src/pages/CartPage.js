@@ -58,8 +58,9 @@ function CartPage() {
       setError('Please enter the last 4 digits of your card.');
       return;
     }
-    if (!form.cardExpiry || !form.cardExpiry.match(/^\d{2}\/\d{2}$/)) {
-      setError('Please enter expiry date in format MM/YY.');
+    console.log('DEBUG cardExpiry value:', JSON.stringify(form.cardExpiry));
+    if (!form.cardExpiry || !form.cardExpiry.match(/^\d{2}.?\d{2}$/)) {
+      setError(`Please enter expiry date in format MM/YY. Got: "${form.cardExpiry}"`);
       return;
     }
 

@@ -71,7 +71,10 @@ public class OrderService {
                 String itemId = caService.getItemIdFromProductId(item.getProductId());
                 if (itemId != null) {
                     boolean deducted = caService.deductStockFromCA(itemId, item.getQuantity());
-                    if (!deducted) {
+                    if (deducted) {
+                        // Also update PU's local cache so frontend shows correct stock
+                        orderRepository.deductLocalStockOnly(item.getProductId(), item.getQuantity());
+                    } else {
                         System.err.println("[OrderService] Failed to deduct from CA for " + itemId);
                         // Continue anyway - order is already created
                     }

@@ -20,10 +20,17 @@ export function CartProvider({ children }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
   }, [cart]);
 
-  const addToCart = (product) => {
-    const { productId, description, price } = product || {};
+  const addToCart = (productOrId, descriptionArg, priceArg) => {
+    let productId, description, price;
+    if (typeof productOrId === 'object' && productOrId !== null) {
+      ({ productId, description, price } = productOrId);
+    } else {
+      productId = productOrId;
+      description = descriptionArg;
+      price = priceArg;
+    }
     if (!productId) return;
-    
+
     setCart(prev => {
       const existing = prev.find(i => i.productId === productId);
       if (existing) {

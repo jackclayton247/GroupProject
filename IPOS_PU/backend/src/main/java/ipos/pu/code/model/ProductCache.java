@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 public class ProductCache {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "product_id")
     private int productId;
 

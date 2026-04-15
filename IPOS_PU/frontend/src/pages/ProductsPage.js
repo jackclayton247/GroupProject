@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './ProductsPage.css';
 
@@ -11,8 +12,9 @@ const categories = [
 ];
 
 function ProductsPage() {
+    const [searchParams] = useSearchParams();
     const [selectedCategory, setSelectedCategory] = useState("all");
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(searchParams.get('search') || "");
     const [products, setProducts] = useState([]);
     const [lastUpdated, setLastUpdated] = useState(null);
     const { addToCart } = useCart();
@@ -33,6 +35,12 @@ function ProductsPage() {
                 setProducts([]);
             });
     };
+
+    // Update search from URL query param
+    useEffect(() => {
+        const q = searchParams.get('search');
+        if (q) setSearch(q);
+    }, [searchParams]);
 
     // Fetch on category change
     useEffect(() => {
@@ -87,7 +95,7 @@ function ProductsPage() {
             <div key={product.productId} className="product-card">
                 <div className="product-info">
                 <h4 className="product-title">{product.description}</h4>
-                <p className="product-price">${product.price?.toFixed(2)}</p>
+                <p className="product-price">&pound;{product.price?.toFixed(2)}</p>
                 <p className="product-stock">Stock: {product.stockQuantity}</p>
                 <button className="product-add-btn" onClick={() => addToCart(product)}>Add to Cart</button>
                 </div>

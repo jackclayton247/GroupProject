@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IPOS-PU — Run, Test &amp; Demo Guide</title>
+<style>
+  @page { margin: 1.5cm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, 'Helvetica Neue', Arial, sans-serif; font-size: 11pt; line-height: 1.5; color: #1a1a1a; max-width: 800px; margin: 0 auto; padding: 2rem; }
+  h1 { font-size: 20pt; border-bottom: 3px solid #2563eb; padding-bottom: 0.3em; margin-top: 0; }
+  h2 { font-size: 15pt; color: #2563eb; margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 0.2em; page-break-after: avoid; }
+  h3 { font-size: 12pt; margin-top: 1.5em; page-break-after: avoid; }
+  code { background: #f1f5f9; padding: 0.15em 0.4em; border-radius: 3px; font-size: 10pt; font-family: 'SF Mono', Menlo, monospace; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 1em; border-radius: 6px; overflow-x: auto; font-size: 9.5pt; line-height: 1.4; page-break-inside: avoid; }
+  pre code { background: none; padding: 0; color: inherit; }
+  table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 10pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #d1d5db; padding: 0.4em 0.6em; text-align: left; }
+  th { background: #f1f5f9; font-weight: 600; }
+  ul.checklist { list-style: none; padding-left: 0; }
+  ul.checklist li { padding: 0.2em 0 0.2em 1.8em; position: relative; }
+  ul.checklist li::before { content: '\2610'; position: absolute; left: 0; font-size: 14pt; line-height: 1.2; }
+  .page-break { page-break-before: always; }
+  .note { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.6em 1em; margin: 1em 0; border-radius: 0 4px 4px 0; font-size: 10pt; }
+  .section-num { color: #64748b; }
+</style>
+</head>
+<body>
+
+<h1>IPOS-PU — Run, Test &amp; Demo Guide</h1>
+<p><strong>Team 36 (Team C) — Group 12</strong><br>
+Date: 13 April 2026 &nbsp;|&nbsp; Demo: 16 April 2026</p>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="section-num">1.</span> Starting the System</h2>
+
+<h3>Step 1 — Start Docker Desktop</h3>
+<p>Open the <strong>Docker Desktop</strong> app on your Mac. Wait until the whale icon in the menu bar stops animating (30–60 s).</p>
+
+<h3>Step 2 — Build &amp; launch</h3>
+<pre><code>cd /Users/vasyl/Documents/group_git/GroupProject/IPOS_PU
+
+# Wipe old database + rebuild everything
+docker-compose down -v
+docker-compose up --build</code></pre>
+
+<p>Wait until you see:</p>
+<pre><code>java-backend  | Started BackendApplication in X seconds
+frontend-app  | Compiled successfully!</code></pre>
+
+<h3>Step 3 — Open the app</h3>
+<p>Go to <strong>http://localhost:3000</strong> in your browser.</p>
+
+<table>
+  <tr><th>Service</th><th>URL</th><th>Port</th></tr>
+  <tr><td>Frontend (React)</td><td>http://localhost:3000</td><td>3000</td></tr>
+  <tr><td>Backend (Spring Boot)</td><td>http://localhost:8080</td><td>8080</td></tr>
+  <tr><td>MySQL</td><td>localhost:3307</td><td>3307 (host) → 3306 (container)</td></tr>
+</table>
+
+<!-- ─────────────────────────────────────────── -->
+<h2 class="page-break"><span class="section-num">2.</span> Testing Checklist</h2>
+
+<h3>2.1 Home Page</h3>
+<ul class="checklist">
+  <li>Opens at <code>http://localhost:3000</code></li>
+  <li>Shows 6 real products from backend (not hardcoded)</li>
+  <li>"Add to Cart" buttons work</li>
+  <li>"View All Products" link goes to <code>/products</code></li>
+  <li>Promo banner links to <code>/promotions</code></li>
+</ul>
+
+<h3>2.2 Registration (IPOS-PU-Members)</h3>
+<ul class="checklist">
+  <li>Click "Create Account" on login page</li>
+  <li>Only email field shown (no password — it's auto-generated)</li>
+  <li>Info text says "A password will be generated and sent to your email"</li>
+  <li>Click "Register" — success message appears</li>
+  <li>Check email inbox for generated password</li>
+  <li>If email doesn't arrive, check backend logs (<code>docker-compose logs backend</code>)</li>
+</ul>
+
+<h3>2.3 First Login + Forced Password Change</h3>
+<ul class="checklist">
+  <li>Sign in with email + generated password</li>
+  <li>Password change screen appears automatically</li>
+  <li>Enter old password + new password + confirm</li>
+  <li>After changing, redirected to home page</li>
+  <li>Log out and log in again with new password — no forced change</li>
+</ul>
+
+<h3>2.4 Products Page (IPOS-PU-SALES)</h3>
+<ul class="checklist">
+  <li>Go to <code>/products</code></li>
+  <li>Products load with prices in <strong>&pound;</strong></li>
+  <li>Category filtering works (1, 2, 3, 4)</li>
+  <li>Search by keyword works (e.g. "para" → Paracetamol)</li>
+  <li>"Add to Cart" works</li>
+  <li>Stock quantities shown</li>
+</ul>
+
+<h3>2.5 Shopping Cart + Checkout</h3>
+<ul class="checklist">
+  <li>Go to <code>/cart</code> — items show with correct prices</li>
+  <li>Adjust quantities (+/−), remove items</li>
+  <li>Fill in delivery address</li>
+  <li>Fill in card details (type, first 4, last 4, expiry MM/YY)</li>
+  <li>Click "Place Order" — success message</li>
+  <li>Cart clears</li>
+  <li>Check email for order confirmation</li>
+</ul>
+
+<h3>2.6 Purchase History</h3>
+<ul class="checklist">
+  <li>Go to <code>/purchase-history</code></li>
+  <li>Order(s) appear with status "received"</li>
+  <li>Click to expand — items, quantities, prices shown</li>
+  <li>Filter by status works</li>
+</ul>
+
+<h3>2.7 Order Status Update (via terminal)</h3>
+<pre><code># Update to Dispatched
+curl -X PUT http://localhost:8080/api/orders/1/status \
+  -H "Content-Type: application/json" \
+  -d '{"status":"Dispatched"}'
+
+# Update to Delivered
+curl -X PUT http://localhost:8080/api/orders/1/status \
+  -H "Content-Type: application/json" \
+  -d '{"status":"Delivered"}'</code></pre>
+<ul class="checklist">
+  <li>Refresh purchase history — status updates correctly</li>
+</ul>
+
+<h3 class="page-break">2.8 Promotions — Merchant Creates Campaign</h3>
+<p>First, make your user a merchant:</p>
+<pre><code>curl -X POST http://localhost:8080/merchant/response \
+  -H "Content-Type: application/json" \
+  -d '{"email":"YOUR_EMAIL_HERE"}'</code></pre>
+
+<ul class="checklist">
+  <li>Log in with that email</li>
+  <li>Go to <code>/promotions</code> — Merchant Dashboard appears</li>
+  <li>Click "+ New Campaign"</li>
+  <li>Enter name, start date, end date</li>
+  <li>Select products and set discount %</li>
+  <li>Click "Create Campaign" — campaign appears in table</li>
+  <li>Click campaign row to expand — shows items + conversion tracking</li>
+  <li>Cancel a campaign — it disappears</li>
+</ul>
+
+<h3>2.9 Promotions — Public View</h3>
+<ul class="checklist">
+  <li>Log out (or use incognito window)</li>
+  <li>Go to <code>/promotions</code></li>
+  <li>Active campaigns show as cards</li>
+  <li>Click a campaign → items with discounted prices appear</li>
+  <li>"Add to Cart" works with discounted price</li>
+</ul>
+
+<h3>2.10 Reports (IPOS-PU-RPT)</h3>
+<ul class="checklist">
+  <li>Log in as merchant, go to Merchant Dashboard → "Reports" tab</li>
+  <li>Sales report shows real order data</li>
+  <li>Change date range, click "Generate"</li>
+  <li>Totals match at bottom</li>
+</ul>
+
+<p>API test:</p>
+<pre><code># Sales report
+curl "http://localhost:8080/api/reports/sales?startDate=2026-01-01&amp;endDate=2026-12-31"
+
+# Campaign report
+curl "http://localhost:8080/api/reports/campaigns?startDate=2026-01-01&amp;endDate=2026-12-31"
+
+# Engagement / conversion report
+curl "http://localhost:8080/api/reports/engagement?campaignName=Spring%20Sale"</code></pre>
+
+<h3>2.11 Merchant Application → SA</h3>
+<pre><code># Submit application (user must be registered)
+curl -X POST "http://localhost:8080/merchant/application?email=test@example.com"
+
+# View pending applications
+curl http://localhost:8080/merchant/applications
+
+# SA approves
+curl -X POST http://localhost:8080/merchant/response \
+  -H "Content-Type: application/json" -d '{"email":"test@example.com"}'
+
+# SA rejects
+curl -X POST http://localhost:8080/merchant/reject \
+  -H "Content-Type: application/json" -d '{"email":"test@example.com"}'</code></pre>
+
+<h3>2.12 CA Integration</h3>
+<pre><code># View PU product cache
+curl http://localhost:8080/api/sync/cache
+
+# Check pending stock changes (offline orders)
+curl http://localhost:8080/api/sync/pending-changes
+
+# CA pushes products to PU
+# POST http://localhost:8080/api/sync/update-cache (JSON array)</code></pre>
+
+<!-- ─────────────────────────────────────────── -->
+<h2 class="page-break"><span class="section-num">3.</span> Demo Day Script (16 April)</h2>
+
+<h3>3.1 Before the demo — Load demo data</h3>
+<p>Save this as <code>demo-setup.sh</code> and run it after starting Docker:</p>
+<pre><code>#!/bin/bash
+API="http://localhost:8080"
+
+echo "=== 1. Register demo user ==="
+curl -s -X POST "$API/auth/signup" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@pharmacy.com","password":"demo123"}'
+
+echo -e "\n=== 2. Make demo user a merchant ==="
+curl -s -X POST "$API/merchant/response" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"demo@pharmacy.com"}'
+
+echo -e "\n=== 3. Place demo orders ==="
+curl -s -X POST "$API/api/orders" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userEmail":"demo@pharmacy.com",
+    "deliveryAddress":"3, High Level Drive, Sydenham, SE26 3ET",
+    "cardType":"VISA","cardFirstFour":"4242",
+    "cardLastFour":"1234","cardExpiry":"12/27",
+    "items":[{"productId":1,"quantity":10},
+             {"productId":2,"quantity":5},
+             {"productId":3,"quantity":20}]
+  }'
+
+echo -e "\n=== 4. Update order status ==="
+curl -s -X PUT "$API/api/orders/1/status" \
+  -H "Content-Type: application/json" \
+  -d '{"status":"Dispatched"}'
+
+echo -e "\n=== 5. Create promotion ==="
+curl -s -X POST "$API/promo/create" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Spring Sale","start":"2026-04-01","end":"2026-04-30"}'
+
+curl -s -X POST "$API/promo-product/add" \
+  -H "Content-Type: application/json" \
+  -d '{"productId":1,"discount":20,"promotionName":"Spring Sale"}'
+
+curl -s -X POST "$API/promo-product/add" \
+  -H "Content-Type: application/json" \
+  -d '{"productId":2,"discount":15,"promotionName":"Spring Sale"}'
+
+curl -s -X POST "$API/promo-product/add" \
+  -H "Content-Type: application/json" \
+  -d '{"productId":5,"discount":10,"promotionName":"Spring Sale"}'
+
+echo -e "\n=== 6. Register non-commercial customer ==="
+curl -s -X POST "$API/auth/register" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"customer@test.com"}'
+
+echo -e "\n\n=== DONE ==="
+echo "Merchant: demo@pharmacy.com / demo123"
+echo "Frontend: http://localhost:3000"</code></pre>
+
+<pre><code>chmod +x demo-setup.sh
+./demo-setup.sh</code></pre>
+
+<h3>3.2 Suggested Demo Flow</h3>
+<table>
+  <tr><th>#</th><th>What to show</th><th>Where</th></tr>
+  <tr><td>1</td><td>Home page — real products from DB</td><td><code>/</code></td></tr>
+  <tr><td>2</td><td>Register new customer (email only → password emailed)</td><td><code>/login</code></td></tr>
+  <tr><td>3</td><td>Login with generated password → force password change</td><td><code>/login</code></td></tr>
+  <tr><td>4</td><td>Browse products — filter by category, search</td><td><code>/products</code></td></tr>
+  <tr><td>5</td><td>View promotions — active campaigns, discounted prices</td><td><code>/promotions</code></td></tr>
+  <tr><td>6</td><td>Add items to cart (from products + promotions)</td><td><code>/cart</code></td></tr>
+  <tr><td>7</td><td>Checkout — address, card, place order</td><td><code>/cart</code></td></tr>
+  <tr><td>8</td><td>Purchase history — view order, expand for details</td><td><code>/purchase-history</code></td></tr>
+  <tr><td>9</td><td>Order tracking — update status via curl, refresh page</td><td>terminal + browser</td></tr>
+  <tr><td>10</td><td>Merchant portal — promotions + conversion tracking</td><td><code>/promotions</code> (as merchant)</td></tr>
+  <tr><td>11</td><td>Sales reports — generate for date range</td><td>Merchant Dashboard → Reports</td></tr>
+  <tr><td>12</td><td>SA integration — merchant application endpoints</td><td>terminal (curl)</td></tr>
+  <tr><td>13</td><td>CA integration — stock sync, pending changes</td><td>terminal (curl)</td></tr>
+</table>
+
+<!-- ─────────────────────────────────────────── -->
+<h2 class="page-break"><span class="section-num">4.</span> Troubleshooting</h2>
+
+<table>
+  <tr><th>Problem</th><th>Fix</th></tr>
+  <tr><td>"Cannot connect to Docker"</td><td>Open Docker Desktop app, wait for it to start</td></tr>
+  <tr><td>Backend keeps restarting</td><td><code>docker-compose logs backend</code> — usually MySQL isn't ready, wait 30s</td></tr>
+  <tr><td>Schema errors / table missing</td><td><code>docker-compose down -v &amp;&amp; docker-compose up --build</code></td></tr>
+  <tr><td>Frontend not loading</td><td><code>docker-compose logs frontend</code> — check npm errors</td></tr>
+  <tr><td>Email not sending</td><td>Check backend logs. Emails are logged to console regardless.</td></tr>
+  <tr><td>Port 8080 in use</td><td><code>lsof -i :8080</code> → kill the process</td></tr>
+  <tr><td>Port 3000 in use</td><td><code>lsof -i :3000</code> → kill the process</td></tr>
+  <tr><td>Products page empty</td><td>Check <code>insert_products.sql</code> ran. Try: <code>curl http://localhost:8080/api/products</code></td></tr>
+  <tr><td>CA offline warning in logs</td><td>Normal if IPOS-CA isn't running. PU uses its local cache.</td></tr>
+</table>
+
+<!-- ─────────────────────────────────────────── -->
+<h2><span class="section-num">5.</span> Key Endpoints Reference</h2>
+
+<table>
+  <tr><th>Endpoint</th><th>Method</th><th>Purpose</th></tr>
+  <tr><td><code>/auth/register</code></td><td>POST</td><td>Non-commercial registration (auto password)</td></tr>
+  <tr><td><code>/auth/signup</code></td><td>POST</td><td>Standard registration (user picks password)</td></tr>
+  <tr><td><code>/auth/login</code></td><td>POST</td><td>Login</td></tr>
+  <tr><td><code>/auth/change-password</code></td><td>POST</td><td>Change password</td></tr>
+  <tr><td><code>/api/products</code></td><td>GET</td><td>List products (optional <code>?category=</code>)</td></tr>
+  <tr><td><code>/api/orders</code></td><td>POST</td><td>Place order</td></tr>
+  <tr><td><code>/api/orders/my-orders</code></td><td>GET</td><td>User's order history</td></tr>
+  <tr><td><code>/api/orders/{id}/status</code></td><td>PUT</td><td>Update order status</td></tr>
+  <tr><td><code>/api/orders/track/{id}</code></td><td>GET</td><td>Track order</td></tr>
+  <tr><td><code>/promo/create</code></td><td>POST</td><td>Create campaign</td></tr>
+  <tr><td><code>/promo/cancel?name=</code></td><td>POST</td><td>Cancel campaign</td></tr>
+  <tr><td><code>/promo/active</code></td><td>GET</td><td>Active promotions with products</td></tr>
+  <tr><td><code>/promo-product/add</code></td><td>POST</td><td>Add product to campaign</td></tr>
+  <tr><td><code>/promo/click/campaign</code></td><td>POST</td><td>Record campaign click</td></tr>
+  <tr><td><code>/promo/click/item</code></td><td>POST</td><td>Record item add-to-cart</td></tr>
+  <tr><td><code>/api/reports/sales</code></td><td>GET</td><td>Sales report</td></tr>
+  <tr><td><code>/api/reports/campaigns</code></td><td>GET</td><td>Campaign report</td></tr>
+  <tr><td><code>/api/reports/engagement</code></td><td>GET</td><td>Conversion rate report</td></tr>
+  <tr><td><code>/merchant/application</code></td><td>POST</td><td>Submit merchant application</td></tr>
+  <tr><td><code>/merchant/response</code></td><td>POST</td><td>SA approves application</td></tr>
+  <tr><td><code>/merchant/reject</code></td><td>POST</td><td>SA rejects application</td></tr>
+  <tr><td><code>/merchant/applications</code></td><td>GET</td><td>List pending applications</td></tr>
+  <tr><td><code>/api/sync/cache</code></td><td>GET</td><td>Full product cache for CA</td></tr>
+  <tr><td><code>/api/sync/update-cache</code></td><td>POST</td><td>CA pushes products to PU</td></tr>
+  <tr><td><code>/api/sync/pending-changes</code></td><td>GET</td><td>Pending offline stock changes</td></tr>
+  <tr><td><code>/api/comms/email</code></td><td>POST</td><td>Send email (for SA/CA)</td></tr>
+</table>
+
+<div class="note">
+  <strong>For SA team (Team 34):</strong> To approve a merchant, call <code>POST http://&lt;PU_HOST&gt;:8080/merchant/response</code> with <code>{"email":"..."}</code>. PU forwards applications to <code>SA_BASE_URL/api/membership/request</code> (default port 8081).
+</div>
+
+</body>
+</html>

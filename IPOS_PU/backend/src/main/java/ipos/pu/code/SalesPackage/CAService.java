@@ -61,7 +61,7 @@ public class CAService {
         try {
             String jsonBody = new JSONObject().put("quantity", quantity).toString();
             // URL-encode itemId to handle spaces
-            String encodedItemId = java.net.URLEncoder.encode(itemId, java.nio.charset.StandardCharsets.UTF_8);
+            String encodedItemId = itemId.replace(" ", "%20");
             
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(CA_BASE_URL + "/api/stock/deduct/" + encodedItemId))

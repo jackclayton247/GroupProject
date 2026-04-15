@@ -1,45 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import MerchantDashboard from './MerchantDashboard';
 import './PromotionsPage.css';
 
-const mockCampaigns = [
-  {
-    id: 'CAMP_001',
-    name: 'Spring Sale',
-    startDate: '2026-04-01',
-    endDate: '2026-04-30',
-    items: [
-      { productId: 1, itemId: '100 00001', description: 'Paracetamol', unitCost: 0.10, discount: 20, availability: 500 },
-      { productId: 2, itemId: '100 00002', description: 'Aspirin', unitCost: 0.50, discount: 15, availability: 300 },
-      { productId: 3, itemId: '400 00001', description: 'Vitamin C', unitCost: 1.20, discount: 10, availability: 200 },
-    ],
-  },
-  {
-    id: 'CAMP_002',
-    name: 'Wellness Week',
-    startDate: '2026-04-08',
-    endDate: '2026-04-15',
-    items: [
-      { productId: 4, itemId: '400 00002', description: 'Vitamin B12', unitCost: 1.30, discount: 25, availability: 150 },
-      { productId: 5, itemId: '200 00005', description: 'Rhynol', unitCost: 2.50, discount: 10, availability: 180 },
-    ],
-  },
-];
+const API = 'http://localhost:8080';
 
 function PublicPromotionsView() {
+  const [campaigns, setCampaigns] = useState([]);
   const [selectedCampaign, setSelectedCampaign] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, []);
+
+  const fetchCampaigns = async () => {
+    try {
+      const res = await fetch(`${API}/promo/active`);
+      const data = await res.json();
+      setCampaigns(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to fetch promotions:', err);
+      setCampaigns([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const discountedPrice = (price, discount) =>
     parseFloat((price * (1 - discount / 100)).toFixed(2));
 
-  const handleAddToCart = (item) => {
-    addToCart(item.productId, item.description, discountedPrice(item.unitCost, item.discount));
+  const handleCampaignClick = async (camp) => {
+    if (selectedCampaign?.name === camp.name) {
+      setSelectedCampaign(null);
+      return;
+    }
+    setSelectedCampaign(camp);
+    // Record campaign click
+    try {
+      await fetch(`${API}/promo/click/campaign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignName: camp.name }),
+      });
+    } catch { /* silent */ }
   };
+
+  const handleAddToCart = async (item, campaignName) => {
+    addToCart(item.productId, item.description, discountedPrice(item.unitCost, item.discount));
+    // Record item click
+    try {
+      await fetch(`${API}/promo/click/item`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ campaignName, productId: item.productId, quantity: 1 }),
+      });
+    } catch { /* silent */ }
+  };
+
+  if (loading) {
+    return (
+      <div className="promotions-page">
+        <div className="promotions-hero">
+          <h1>Active Promotions</h1>
+          <p>Loading promotions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="promotions-page">
@@ -49,33 +81,39 @@ function PublicPromotionsView() {
       </div>
 
       <div className="promotions-container">
-        <div className="campaigns-list">
-          {mockCampaigns.map(camp => (
-            <div
-              key={camp.id}
-              className={`campaign-card ${selectedCampaign?.id === camp.id ? 'selected' : ''}`}
-              onClick={() => setSelectedCampaign(selectedCampaign?.id === camp.id ? null : camp)}
-            >
-              <div className="campaign-badge">ACTIVE</div>
-              <h2 className="campaign-name">{camp.name}</h2>
-              <p className="campaign-dates">
-                {new Date(camp.startDate).toLocaleDateString('en-GB')} &ndash;{' '}
-                {new Date(camp.endDate).toLocaleDateString('en-GB')}
-              </p>
-              <p className="campaign-items-count">{camp.items.length} items on promotion</p>
-              <button className="campaign-view-btn">
-                {selectedCampaign?.id === camp.id ? 'Hide Items' : 'View Items'}
-              </button>
-            </div>
-          ))}
-        </div>
+        {campaigns.length === 0 ? (
+          <div style={{textAlign:'center', padding:'3rem', color:'#666'}}>
+            <p>No active promotions at the moment. Check back soon!</p>
+          </div>
+        ) : (
+          <div className="campaigns-list">
+            {campaigns.map(camp => (
+              <div
+                key={camp.name}
+                className={`campaign-card ${selectedCampaign?.name === camp.name ? 'selected' : ''}`}
+                onClick={() => handleCampaignClick(camp)}
+              >
+                <div className="campaign-badge">ACTIVE</div>
+                <h2 className="campaign-name">{camp.name}</h2>
+                <p className="campaign-dates">
+                  {new Date(camp.startDate).toLocaleDateString('en-GB')} &ndash;{' '}
+                  {new Date(camp.endDate).toLocaleDateString('en-GB')}
+                </p>
+                <p className="campaign-items-count">{camp.items.length} items on promotion</p>
+                <button className="campaign-view-btn">
+                  {selectedCampaign?.name === camp.name ? 'Hide Items' : 'View Items'}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
 
         {selectedCampaign && (
           <div className="campaign-detail">
             <h2 className="campaign-detail-title">{selectedCampaign.name} — Promoted Items</h2>
             <div className="promo-items-grid">
               {selectedCampaign.items.map(item => (
-                <div key={item.itemId} className="promo-item-card">
+                <div key={item.productId} className="promo-item-card">
                   <div className="promo-discount-badge">-{item.discount}%</div>
                   <h3 className="promo-item-name">{item.description}</h3>
                   <p className="promo-item-id">ID: {item.itemId}</p>
@@ -86,7 +124,7 @@ function PublicPromotionsView() {
                   <p className="promo-stock">{item.availability} packs available</p>
                   <button
                     className="promo-add-btn"
-                    onClick={() => handleAddToCart(item)}
+                    onClick={(e) => { e.stopPropagation(); handleAddToCart(item, selectedCampaign.name); }}
                   >
                     Add to Cart
                   </button>

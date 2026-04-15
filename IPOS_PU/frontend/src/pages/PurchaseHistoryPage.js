@@ -28,7 +28,7 @@ function PurchaseHistoryPage() {
 
     const fetchOrders = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/orders/my-orders', {
+        const response = await fetch(`http://localhost:8080/api/orders/my-orders?email=${encodeURIComponent(userEmail)}`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -183,7 +183,7 @@ function PurchaseHistoryPage() {
                       </tfoot>
                     </table>
                     <div className="ph-order-actions">
-                      <button className="ph-track-btn">Track Order</button>
+                      <button className="ph-track-btn" onClick={() => alert(`Order #${order.orderId}\nStatus: ${order.status}\nDate: ${new Date(order.date).toLocaleDateString('en-GB')}\nTotal: £${order.total.toFixed(2)}`)}>Track Order</button>
                       {order.status === 'Delivered' && (
                         <button className="ph-reorder-btn">Reorder</button>
                       )}

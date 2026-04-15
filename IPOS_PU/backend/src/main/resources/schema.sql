@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS product_cache (
-    product_id INT PRIMARY KEY,
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
     item_id VARCHAR(255) NOT NULL UNIQUE,
     description VARCHAR(255) NOT NULL,
     package_type VARCHAR(255),
@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS `user` (
     email VARCHAR(255) PRIMARY KEY,
     password VARCHAR(255) NOT NULL,
     orderNumber INT NOT NULL DEFAULT 0,
-    merchant BOOLEAN NOT NULL DEFAULT FALSE
+    merchant BOOLEAN NOT NULL DEFAULT FALSE,
+    force_password_change BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS promotion (
@@ -78,4 +79,29 @@ CREATE TABLE IF NOT EXISTS ca_payments (
     amount DECIMAL(9,2),
     status VARCHAR(50),
     payment_time DATETIME DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS merchant_applications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255),
+    company_reg_number VARCHAR(100),
+    director_name VARCHAR(255),
+    business_type VARCHAR(100),
+    address TEXT,
+    phone VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'pending',
+    applied_at DATETIME DEFAULT NOW(),
+    decided_at DATETIME,
+    FOREIGN KEY (email) REFERENCES `user`(email) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS campaign_clicks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    promotion_name VARCHAR(255),
+    product_id INT,
+    click_type VARCHAR(20) NOT NULL,
+    clicked_at DATETIME DEFAULT NOW(),
+    FOREIGN KEY (promotion_name) REFERENCES promotion(name),
+    FOREIGN KEY (product_id) REFERENCES product_cache(product_id)
 );
