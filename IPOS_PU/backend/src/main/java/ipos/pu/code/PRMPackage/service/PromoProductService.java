@@ -17,8 +17,8 @@ public class PromoProductService {
             return "unknown error";
         }
     }
-    public String removeProduct(int productId) {
-        int response = promoProductRepository.removeProduct(productId);
+    public String removeProduct(int productId, String promotionName) {
+        int response = promoProductRepository.removeProduct(productId, promotionName);
         if (response == 0) {
             return "success";
         }

@@ -46,8 +46,8 @@ public class PromoProductController {
     }
 
     @PostMapping("/remove")
-    public String removeProduct(int productId) {
-        return promoProductService.removeProduct(productId);
+    public String removeProduct(@RequestParam int productId, @RequestParam String promotionName) {
+        return promoProductService.removeProduct(productId, promotionName);
     }
     @GetMapping("/all")
     public List<PromotionProduct> getAll(@RequestParam String name) {

@@ -149,7 +149,7 @@ function PromotionsTab() {
       // Remove products that were deselected
       for (const id of oldIds) {
         if (!newIds.includes(id)) {
-          await fetch(`${API}/promo-product/remove?productId=${id}`, { method: 'POST' });
+          await fetch(`${API}/promo-product/remove?productId=${id}&promotionName=${encodeURIComponent(editingCamp)}`, { method: 'POST' });
         }
       }
 
@@ -500,7 +500,7 @@ function ReportsTab() {
 
   const downloadPDF = async () => {
     const { default: jsPDF } = await import('jspdf');
-    await import('jspdf-autotable');
+    const { default: autoTable } = await import('jspdf-autotable');
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -546,7 +546,7 @@ function ReportsTab() {
     doc.setTextColor(0, 0, 0);
 
     // Table
-    doc.autoTable({
+    autoTable(doc, {
       startY: summaryY + 30,
       head: [['Item ID', 'Description', 'Unit Price', 'Qty Sold', 'Revenue']],
       body: items.map(row => [

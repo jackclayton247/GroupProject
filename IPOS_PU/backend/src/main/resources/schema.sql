@@ -27,9 +27,10 @@ CREATE TABLE IF NOT EXISTS promotion (
 );
 
 CREATE TABLE IF NOT EXISTS promotion_product (
-    product_id INT PRIMARY KEY,
+    product_id INT,
     promotion_name VARCHAR(255),
     discount FLOAT,
+    PRIMARY KEY (product_id, promotion_name),
     FOREIGN KEY (promotion_name) REFERENCES promotion(name),
     FOREIGN KEY (product_id) REFERENCES product_cache(product_id)
 );

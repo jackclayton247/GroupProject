@@ -2,14 +2,17 @@ package ipos.pu.code.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
+@IdClass(PromotionProductId.class)
 public class PromotionProduct {
     @Id
     private int productId;
 
+    @Id
     @ManyToOne
     @JoinColumn(name = "promotion_name")
     private Promotion promotion;
@@ -43,4 +46,3 @@ public class PromotionProduct {
         this.discount = discount;
     }
 }
-

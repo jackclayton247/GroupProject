@@ -29,10 +29,11 @@ public class PromoProductRepository {
         }
         
     }
-    public int removeProduct(int productId) {
-        String sql = "DELETE FROM promotion_product WHERE product_id = ?";
+    public int removeProduct(int productId, String promotionName) {
+        String sql = "DELETE FROM promotion_product WHERE product_id = ? AND promotion_name = ?";
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, productId);
+            stmt.setString(2, promotionName);
 
             int rowsDeleted = stmt.executeUpdate();
 

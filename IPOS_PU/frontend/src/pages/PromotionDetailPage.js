@@ -28,7 +28,7 @@ function PromotionDetailPage() {
 
   const handleRemoveProduct = async (productId) => {
     try {
-      const response = await fetch(`http://localhost:8080/promo/removeProduct?productId=${productId}`, {
+      const response = await fetch(`http://localhost:8080/promo-product/remove?productId=${productId}&promotionName=${encodeURIComponent(name)}`, {
         method: 'POST'
       });
       if (response.ok) {
