@@ -500,7 +500,8 @@ function ReportsTab() {
 
   const downloadPDF = async () => {
     const { default: jsPDF } = await import('jspdf');
-    await import('jspdf-autotable');
+    const { applyPlugin } = await import('jspdf-autotable');
+    applyPlugin(jsPDF);
 
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
